@@ -40,7 +40,7 @@ bool perspectiveOrthoPointers = false;
 double HandsDistance = 100.0;
 
 Vecteur3D Scale = Vecteur3D(0.03,0.04,0.04);
-Vecteur3D Translate = Vecteur3D(0.0,-5.0,0.0);
+Vecteur3D Translate = Vecteur3D(0.0,-5.0,-2.0);
 
 
 // For targets
@@ -62,6 +62,7 @@ GameTrakCallback(void *context,
              double leftx, double lefty, double leftz,
              double rightx, double righty, double rightz,
              bool button)  {
+    if (!gt) return ;
 
     gametrakLeftHand.x=leftx;
     gametrakLeftHand.y=lefty;
@@ -80,6 +81,7 @@ GameTrakCallback(void *context,
             << "button: " << button << std::endl ;
         last_time = timestamp;
     }
+
 }
 
 void initGL()
@@ -185,7 +187,8 @@ void display()
     glColor3f(1,1,1);
     Grid(20,30,0.5);
 
-
+    RT.HitTarget(LeftP.x,LeftP.y,LeftP.z,button_pressed );
+    RT.HitTarget(RightP.x,RightP.y,RightP.z,button_pressed );
     RT.DisplayTargets();
 
     glColor3f(1,0,0);
@@ -220,7 +223,7 @@ void display()
          GLDisplayString(txt, 0.1,0.8,0.2);
     }
 
-    //Sleep(20);
+    //sleep(20);
     glutSwapBuffers();
     glutPostRedisplay();
 }
@@ -296,8 +299,14 @@ int main(int argc, char* argv[])
         glutEnterGameMode();					//start fullscreen game mode
     }
 
-    GameTrak *gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
-    gt->setGameTrakCallback(GameTrakCallback) ;
+    try {
+        gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
+        gt->setGameTrakCallback(GameTrakCallback) ;
+    } catch (std::runtime_error e) {
+        std::cerr << "Runtime error: " << e.what() << std::endl ;
+    } catch (std::exception e) {
+        std::cerr << "Exception: " << e.what() << std::endl ;
+    }
 
     initGL();
 

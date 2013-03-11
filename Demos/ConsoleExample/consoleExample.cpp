@@ -29,7 +29,7 @@ GameTrakCallback(void *context,
              double leftx, double lefty, double leftz,
              double rightx, double righty, double rightz,
              bool button)  {
-  //if (!gt) return ;
+  if (!gt) return ;
 
   double freq = 1/((timestamp - last_time) * 1.0E-9);
   std::cout << timestamp << " ns, " 
@@ -45,7 +45,7 @@ int
 main(int argc, char** argv) {
   try {
 
-    GameTrak *gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
+    gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
     gt->setGameTrakCallback(GameTrakCallback) ;
 
     while (!button_pressed)

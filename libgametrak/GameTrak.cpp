@@ -29,7 +29,7 @@
     rawRightL = 0;
     button = false;
 
-    mincutoff = 0.5;
+    mincutoff = 1.0; 
     beta = 0.001;
     dcutoff = 1.0;
 
