@@ -29,8 +29,8 @@
     rawRightL = 0;
     button = false;
 
-    mincutoff = 0.000001;
-    beta = 1.0;
+    mincutoff = 0.5;
+    beta = 0.001;
     dcutoff = 1.0;
 
     filterLeftTheta = new OneEuroFilter(120, mincutoff, beta, dcutoff) ;

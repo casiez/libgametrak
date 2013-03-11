@@ -30,6 +30,9 @@ namespace gametrak {
     GameTrakCallback callback ;
     void *callback_context ;
 
+    double rawLeftThetafPrev, rawLeftPhifPrev, rawLeftLfPrev,
+      rawRightThetafPrev, rawRightPhifPrev, rawRightLfPrev;
+
   public:
   
     HIDAPIGameTrak(URI uri) ;

@@ -14,7 +14,6 @@
  */
 
 #include <libgametrak/GameTrak.h>
-
 #include <iomanip>
 #include <stdexcept>
 

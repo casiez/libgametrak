@@ -29,6 +29,13 @@ namespace gametrak {
       throw std::runtime_error("HIDAPIGameTrak: pb opening GameTrak") ;
     }
 
+    rawLeftThetafPrev = 0;
+    rawLeftPhifPrev = 0;
+    rawLeftLfPrev = 0;
+    rawRightThetafPrev = 0;
+    rawRightPhifPrev = 0;
+    rawRightLfPrev = 0;
+
     callback = 0 ;
     callback_context = 0 ;
 
@@ -71,8 +78,25 @@ namespace gametrak {
 
       self->FilterRawvalues(now * 1.0E-9);
 
-      if (self->callback != 0)
-        self->callback(self->callback_context, now, self->rawLeftTheta, self->rawLeftPhi, self->rawLeftL, self->rawRightTheta, self->rawRightPhi, self->rawRightL, button);
+      // If position changed then call the callback
+      /*
+      bool send = false;
+      if ((floor(self->rawLeftThetaf) != self->rawLeftThetafPrev) ||
+          (floor(self->rawLeftPhif) != self->rawLeftPhifPrev) ||
+          (floor(self->rawLeftLf) != self->rawLeftLfPrev) ||
+          (floor(self->rawRightThetaf) != self->rawRightThetafPrev) ||
+          (floor(self->rawRightPhif) != self->rawRightPhifPrev) ||
+          (floor(self->rawRightLf) != self->rawRightLfPrev)) {
+          send = true;
+       }
+
+      self->rawLeftThetafPrev = floor(self->rawLeftThetaf);
+      self->rawLeftPhifPrev = floor(self->rawLeftPhif);
+      self->rawLeftLfPrev = floor(self->rawLeftLf);
+      self->rawRightThetafPrev = floor(self->rawRightThetaf);
+      self->rawRightPhifPrev = floor(self->rawRightPhif);
+      self->rawRightLfPrev = floor(self->rawRightLf);
+    */
 
 
       // Metric values
@@ -98,8 +122,13 @@ namespace gametrak {
       self->RightY = RightHand.y;
       self->RightZ = RightHand.z;
 
-      // if (self->callback != 0)
-      //   self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
+      // bool send = true;
+      // if (send && (self->callback != 0))
+      //   self->callback(self->callback_context, now, floor(self->rawLeftThetaf), floor(self->rawLeftPhif), floor(self->rawLeftLf), floor(self->rawRightThetaf), floor(self->rawRightPhif), floor(self->rawRightLf), button);
+
+      bool send = true;
+      if (send && (self->callback != 0))
+        self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
     }
 
     return 0 ;
