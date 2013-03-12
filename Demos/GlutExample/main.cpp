@@ -40,7 +40,7 @@ bool perspectiveOrthoPointers = false;
 double HandsDistance = 100.0;
 
 Vecteur3D Scale = Vecteur3D(0.03,0.04,0.04);
-Vecteur3D Translate = Vecteur3D(0.0,-5.0,-2.0);
+Vecteur3D Translate = Vecteur3D(0.0,-5.0,0.0);
 
 
 // For targets
@@ -213,14 +213,10 @@ void display()
     if (debug)
     {
         char txt[100];
-
-        // Display
-        // sprintf(txt, "%3.0f Hz",freq);
-        // glColor3f(1,1,1);
-        // GLDisplayString(txt, 0.1,0.9,0.2);
+        glColor3f(1,0,0);
 
         sprintf(txt,"%3.1f %3.1f %3.1f\r", RightP.x, RightP.y, RightP.z);
-         GLDisplayString(txt, 0.1,0.8,0.2);
+        GLDisplayString(txt, 0.1,0.9,0.2);
     }
 
     //sleep(20);
@@ -299,8 +295,14 @@ int main(int argc, char* argv[])
         glutEnterGameMode();					//start fullscreen game mode
     }
 
+
+    initGL();
     glutDisplayFunc(display);
-    
+    glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+    glutIdleFunc(idle);
+    glutReshapeFunc(reshape);
+
     try {
         gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
         gt->setGameTrakCallback(GameTrakCallback) ;
@@ -309,14 +311,6 @@ int main(int argc, char* argv[])
     } catch (std::exception e) {
         std::cerr << "Exception: " << e.what() << std::endl ;
     }
-
-    initGL();
-
-
-    glutKeyboardFunc(keyboard);
-    glutMouseFunc(mouse);
-    glutIdleFunc(idle);
-    glutReshapeFunc(reshape);
 
     glutMainLoop();
 
