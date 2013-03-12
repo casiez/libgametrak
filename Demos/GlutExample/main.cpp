@@ -299,6 +299,8 @@ int main(int argc, char* argv[])
         glutEnterGameMode();					//start fullscreen game mode
     }
 
+    glutDisplayFunc(display);
+    
     try {
         gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
         gt->setGameTrakCallback(GameTrakCallback) ;
@@ -310,7 +312,7 @@ int main(int argc, char* argv[])
 
     initGL();
 
-    glutDisplayFunc(display);
+
     glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
     glutIdleFunc(idle);
