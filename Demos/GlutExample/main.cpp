@@ -221,7 +221,6 @@ void display()
 
     //sleep(20);
     glutSwapBuffers();
-    glutPostRedisplay();
 }
 
 void keyboard(unsigned char touch,int x,int y)
@@ -244,7 +243,7 @@ void keyboard(unsigned char touch,int x,int y)
 }
 
 void idle(){
-
+        glutPostRedisplay();
 }
 
 
