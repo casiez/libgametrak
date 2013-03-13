@@ -64,18 +64,26 @@ namespace gametrak {
     callback = 0 ;
     callback_context = 0 ;
 
+#ifdef WIN32
+	hThreads[0]=CreateThread(NULL, NULL, eventloop, LPVOID(this), 0, &dwThreadId);
+#else
     int ret = pthread_create(&thread, NULL, eventloop, (void*)this) ;
     if (ret<0) {
       perror("HIDAPIGameTrak::HIDAPIGameTrak") ;
       throw std::runtime_error("HIDAPIGameTrak: pthread_create failed") ;    
     }
+#endif
   }
 
-
+#ifdef WIN32
+DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
+{
+#else
   void *
   HIDAPIGameTrak::eventloop(void *context) {
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL) ;
     pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL) ;
+#endif
 
     HIDAPIGameTrak *self = (HIDAPIGameTrak*)context ;
 

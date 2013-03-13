@@ -18,17 +18,29 @@
 
 #include <libgametrak/GameTrak.h>
 #include <hidapi.h>
-#include <pthread.h>
 #include <stdio.h>
+
+#ifdef WIN32
+  #include <windows.h> 
+#else
+  #include <pthread.h>
+#endif
 
 namespace gametrak {
 
   class HIDAPIGameTrak : public GameTrak {
   private:
   	hid_device *handle;
-  	pthread_t thread ;
     GameTrakCallback callback ;
     void *callback_context ;
+
+#ifdef WIN32
+	HANDLE hThreads[1];
+	DWORD dwThreadId;
+	DWORD dwThreadParam;
+#else
+  	pthread_t thread ;
+#endif
 
     double rawLeftThetafPrev, rawLeftPhifPrev, rawLeftLfPrev,
       rawRightThetafPrev, rawRightPhifPrev, rawRightLfPrev;
@@ -38,8 +50,11 @@ namespace gametrak {
     HIDAPIGameTrak(URI uri) ;
 
     URI getURI(bool expanded=false) const ;
-
+#ifdef WIN32
+	static DWORD WINAPI eventloop(LPVOID lpvThreadParam);
+#else
     static void *eventloop(void *self) ;
+#endif
 
     void setGameTrakCallback(GameTrakCallback callback, void *context) ;
 
