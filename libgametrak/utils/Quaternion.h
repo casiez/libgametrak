@@ -16,7 +16,7 @@
 #ifndef _QUATERNION_
 #define _QUATERNION_
 
-#include <libgametrak/utils/Vecteur3D.h>
+#include <libgametrak/utils/vecteur3d.h>
 #include <assert.h>
 #include <iostream>
 

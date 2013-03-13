@@ -16,7 +16,9 @@
 #include <libgametrak/GameTrak.h>
 #include <libgametrak/HIDAPIGameTrak.h>
 
-#include <CoreServices/CoreServices.h>
+#ifdef __APPLE__
+  #include <CoreServices/CoreServices.h>
+#endif
 
  namespace gametrak {
 

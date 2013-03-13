@@ -13,7 +13,7 @@
  *
  */
 
-#include "randomtargets.h"
+#include "randomTargets.h"
 
 Target::Target()
 {

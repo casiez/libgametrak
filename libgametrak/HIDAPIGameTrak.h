@@ -19,7 +19,7 @@
 #include <libgametrak/GameTrak.h>
 #include <hidapi.h>
 #include <pthread.h>
-
+#include <stdio.h>
 
 namespace gametrak {
 

@@ -25,6 +25,9 @@
 #include <GLUT/glut.h>
 #include <OpenGL/OpenGL.h>
 #endif
+#ifdef __linux__
+#include <GL/glut.h> 
+#endif
 
 class Target
 {

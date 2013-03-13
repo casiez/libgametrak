@@ -21,12 +21,17 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
+#ifdef __linux__
+#include <GL/glut.h> 
+#endif
+
 #include <iostream>
 #include <string>
 #include <fstream>
- #include <iomanip>
+#include <iomanip>
+#include <string.h>
 
-#include "randomtargets.h"
+#include "randomTargets.h"
 
 #include <libgametrak/GameTrak.h>
 
