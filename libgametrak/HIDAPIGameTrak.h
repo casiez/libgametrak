@@ -34,13 +34,17 @@ namespace gametrak {
     GameTrakCallback callback ;
     void *callback_context ;
 
+    bool run; // for the Loop thread
+
 #ifdef WIN32
-	HANDLE hThreads[1];
-	DWORD dwThreadId;
-	DWORD dwThreadParam;
+  HANDLE hThreads[1];
+  DWORD dwThreadId;
+  DWORD dwThreadParam;
 #else
-  	pthread_t thread ;
+    pthread_t thread ;
 #endif
+
+    std::string devicePath;
 
     double rawLeftThetafPrev, rawLeftPhifPrev, rawLeftLfPrev,
       rawRightThetafPrev, rawRightPhifPrev, rawRightLfPrev;
@@ -58,7 +62,7 @@ namespace gametrak {
 
     void setGameTrakCallback(GameTrakCallback callback, void *context) ;
 
-    ~HIDAPIGameTrak() {}
+    ~HIDAPIGameTrak() ;
 
   } ;
 

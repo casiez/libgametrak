@@ -16,6 +16,8 @@
 #ifndef GameTrak_h
 #define GameTrak_h
 
+#include <sstream>
+#include <iomanip>
 #include <libgametrak/utils/Quaternion.h>
 #include <libgametrak/utils/TimeStamp.h>
 #include <libgametrak/utils/URI.h>
@@ -46,6 +48,16 @@ namespace gametrak {
     double rawLeftThetaf, rawLeftPhif, rawLeftLf;
     double rawRightThetaf, rawRightPhif, rawRightLf;
 
+    // calibration values
+    bool calibrating;
+    bool calibrated;
+
+    double minRawLeftTheta, minRawLeftPhi, minRawLeftL;
+    double minRawRightTheta, minRawRightPhi, minRawRightL; 
+
+    double maxRawLeftTheta, maxRawLeftPhi, maxRawLeftL;
+    double maxRawRightTheta, maxRawRightPhi, maxRawRightL; 
+
     // Metric values
     double LeftTheta; // degrees
     double LeftPhi; // degrees
@@ -61,7 +73,11 @@ namespace gametrak {
 
     GameTrak(void) ;
 
-    void FilterRawvalues(double timestamp);
+    void FilterRawvalues(double timestamp) ;
+
+    void calibrate() ;
+
+    std::string getCalibrationString() ;
 
     Vecteur3D Transform(double Theta, double Phi, double L) ;
 
@@ -77,6 +93,9 @@ namespace gametrak {
     static GameTrak *create(std::string device_uri) ;
 
     static void idle(int milliseconds) ;
+
+    virtual void enterCalibration() ;
+    virtual std::string leaveCalibration() ;
 
     virtual bool isActive(void) const { return true ; }
 

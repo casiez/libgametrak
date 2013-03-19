@@ -65,6 +65,24 @@
     RightY = 0;
     RightZ = 0;
 
+    // Calibration
+    calibrating = false;
+    calibrated = false;
+
+    minRawLeftTheta = 0;
+    minRawLeftPhi = 0;
+    minRawLeftL = 0;
+    minRawRightTheta = 0;
+    minRawRightPhi  = 0;
+    minRawRightL  = 0; 
+
+    maxRawLeftTheta  = 4096;
+    maxRawLeftPhi  = 4096;
+    maxRawLeftL  = 4096;
+    maxRawRightTheta  = 4096;
+    maxRawRightPhi  = 4096;
+    maxRawRightL  = 4096;
+
   }
 
   GameTrak *
@@ -96,6 +114,73 @@
     Qphi.AxisToQuaternion(Vecteur3D(1,0,0),Phi);
     Qres = Qtheta * Qphi;
     return Qres.RotateVector(Vecteur3D(0,L,0));
+  }
+
+  void GameTrak::enterCalibration()
+  {
+    calibrating = true;
+    calibrated = false;
+
+    double mid = 4096.0 / 2.0;
+
+    minRawLeftTheta = mid;
+    minRawLeftPhi = mid;
+    minRawLeftL = mid;
+    minRawRightTheta = mid;
+    minRawRightPhi  = mid;
+    minRawRightL  = mid; 
+
+    maxRawLeftTheta  = mid;
+    maxRawLeftPhi  = mid;
+    maxRawLeftL  = mid;
+    maxRawRightTheta  = mid;
+    maxRawRightPhi  = mid;
+    maxRawRightL  = mid; 
+
+  }
+
+  std::string GameTrak::leaveCalibration()
+  {
+    calibrating = false;
+    calibrated = true;
+    return getCalibrationString();
+  }
+
+  std::string GameTrak::getCalibrationString() {
+    std::stringstream q ;
+    q << "milt=" << std::setw(3) << minRawLeftTheta
+      << "&milp=" << std::setw(3) << minRawLeftPhi
+      << "&mill=" << std::setw(3) << minRawLeftL
+      << "&mirt=" << std::setw(3) << minRawRightTheta
+      << "&mirp=" << std::setw(3) << minRawRightPhi
+      << "&mirl=" << std::setw(3) << minRawRightL
+
+      << "&malt=" << std::setw(3) << maxRawLeftTheta
+      << "&malp=" << std::setw(3) << maxRawLeftPhi
+      << "&mall=" << std::setw(3) << maxRawLeftL
+      << "&mart=" << std::setw(3) << maxRawRightTheta
+      << "&marp=" << std::setw(3) << maxRawRightPhi
+      << "&marl=" << std::setw(3) << maxRawRightL;
+
+    return q.str();
+  }
+
+  void GameTrak::calibrate() {
+    if (rawLeftTheta < minRawLeftTheta) minRawLeftTheta = rawLeftTheta;
+    if (rawLeftPhi < minRawLeftPhi) minRawLeftPhi = rawLeftPhi;
+    if (rawLeftL < minRawLeftL) minRawLeftL = rawLeftL;
+    if (rawRightTheta < minRawRightTheta) minRawRightTheta = rawRightTheta;
+    if (rawRightPhi < minRawRightPhi) minRawRightPhi = rawRightPhi;
+    if (rawRightL < minRawRightL) minRawRightL = rawRightL;
+
+    if (rawLeftTheta > maxRawLeftTheta) maxRawLeftTheta = rawLeftTheta;
+    if (rawLeftPhi > maxRawLeftPhi) maxRawLeftPhi = rawLeftPhi;
+    if (rawLeftL > maxRawLeftL) maxRawLeftL = rawLeftL;
+    if (rawRightTheta > maxRawRightTheta) maxRawRightTheta = rawRightTheta;
+    if (rawRightPhi > maxRawRightPhi) maxRawRightPhi = rawRightPhi;
+    if (rawRightL > maxRawRightL) maxRawRightL = rawRightL;
+
+    std::cout << getCalibrationString() << std::endl;
   }
 
   void
