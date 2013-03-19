@@ -228,7 +228,7 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
   URI
   HIDAPIGameTrak::getURI(bool expanded) const {
     URI uri ;
-    uri.scheme = "hiapigt" ;
+    uri.scheme = "hidapigt" ;
     // int i = 0 ;
     // std::stringstream q ;
     // if (expanded || hz!=DUMMY_DEFAULT_HZ) 

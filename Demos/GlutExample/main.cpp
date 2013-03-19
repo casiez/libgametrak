@@ -42,7 +42,7 @@ RandomTargets RT;
 
 bool perspectiveOrthoPointers = false;
 
-double HandsDistance = 100.0;
+double HandsDistance = 0.0;
 
 Vecteur3D Scale = Vecteur3D(0.03,0.04,0.04);
 Vecteur3D Translate = Vecteur3D(0.0,-5.0,0.0);
