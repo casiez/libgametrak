@@ -22,6 +22,8 @@ namespace gametrak {
 
   HIDAPIGameTrak::HIDAPIGameTrak(URI uri):GameTrak() {
 
+    URI::getQueryArg(uri.query, "debugLevel", &debugLevel) ;
+    URI::getQueryArg(uri.query, "serial_number", &serial_number) ;
 
     // Enumerate and print the HID devices on the system
     struct hid_device_info *devs, *cur_dev;
@@ -30,8 +32,7 @@ namespace gametrak {
     devs = hid_enumerate(0x0, 0x0);
     cur_dev = devs; 
     while (cur_dev) {
-      std::wstring product_string(cur_dev->product_string);
-      if (product_string == L"Game-Trak V1.3") {
+      if ((debugLevel>0) && (cur_dev->vendor_id == 0x14B7) && (cur_dev->product_id == 0x0982)) {
         printf("Device Found\n  type: %04hx %04hx\n  path: %s\n  serial_number: %ls",
           cur_dev->vendor_id, cur_dev->product_id, cur_dev->path, cur_dev->serial_number);
         printf("\n");
@@ -53,7 +54,12 @@ namespace gametrak {
       // Open the device using the VID, PID,
       // and optionally the Serial number.
       try {
-        handle = hid_open(0x14B7, 0x0982, NULL);
+        if (serial_number != "") {
+          std::wstring widestr = std::wstring(serial_number.begin(), serial_number.end());
+          handle = hid_open(0x14B7, 0x0982, (widestr.c_str()));
+        }
+        else
+          handle = hid_open(0x14B7, 0x0982, NULL);
         if (handle == NULL) {
           throw std::runtime_error("HIDAPIGameTrak: pb opening GameTrak") ;
         }
@@ -62,6 +68,7 @@ namespace gametrak {
       }
     }
 
+    //std::wstring product_string(cur_dev->product_string);
 
     rawLeftThetafPrev = 0;
     rawLeftPhifPrev = 0;
@@ -86,6 +93,10 @@ namespace gametrak {
     URI::getQueryArg(uri.query, "mart", &maxRawRightTheta) ;
     URI::getQueryArg(uri.query, "marp", &maxRawRightPhi) ;
     URI::getQueryArg(uri.query, "marl", &maxRawRightL) ;
+
+
+    pictrak = false;
+    URI::getQueryArg(uri.query, "pictrak", &pictrak) ;
 
     run = true;
 
@@ -122,7 +133,16 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
       if (res < 0)
         throw std::runtime_error("HIDAPIGameTrak: hid_read error") ; 
 
-      self->rawLeftTheta = (buf[15] << 8) + buf[14];
+      if (self->debugLevel > 2) {
+        std::cout << "Raw buffer = ";
+        for (int i=0; i<16; i++) std::cout << (int)buf[i] << " ";
+        std::cout << std::endl;
+      }
+
+      if (self->pictrak)
+        self->rawLeftTheta = ((buf[1] << 8) + buf[0]);
+      else
+        self->rawLeftTheta = (buf[15] << 8) + buf[14];
       self->rawLeftPhi = (buf[3] << 8) + buf[2];
       self->rawLeftL = (buf[5] << 8) + buf[4];
 
@@ -130,7 +150,20 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
       self->rawRightPhi = (buf[9] << 8) + buf[6];
       self->rawRightL = (buf[11] << 8) + buf[10];
 
-      bool button = buf[12] == 16;
+      bool button;
+      if (self->pictrak)
+        button = buf[12] == 1;
+      else
+        button = buf[12] == 16;
+
+      if (self->debugLevel > 1) 
+        std::cout << "LeftRawTheta=" << std::setw(3) << self->rawLeftTheta
+          << " LeftRawPhi=" << std::setw(3) << self->rawLeftPhi
+          << " LeftRawL=" << std::setw(3) << self->rawLeftL
+          << " RightRawTheta=" << std::setw(3) << self->rawRightTheta
+          << " RightRawPhi=" << std::setw(3) << self->rawRightPhi
+          << " RightRawL=" << std::setw(3) << self->rawRightL << std::endl;
+
 
       TimeStamp::inttime now = TimeStamp::createAsInt();
 
@@ -183,7 +216,11 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
       } else { 
         double mid = 4096.0/2.0;
 
-        self->LeftTheta = (self->rawLeftThetaf - mid) * angleMax / mid;
+        if (self->pictrak)
+          self->LeftTheta = -(self->rawLeftThetaf - mid) * angleMax / mid;
+        else
+          self->LeftTheta = (self->rawLeftThetaf - mid) * angleMax / mid;
+        
         self->LeftPhi = -(self->rawLeftPhif - mid) * angleMax / mid;
         self->LeftL = - stringLength/4096.0 * self->rawLeftLf + stringLength;
 
@@ -191,6 +228,14 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
         self->RightPhi = -(self->rawRightPhif - mid) * angleMax / mid;
         self->RightL = - stringLength/4096.0 * self->rawRightLf + stringLength; 
       }
+
+      if (self->debugLevel > 1) 
+        std::cout << "LeftTheta=" << std::setw(3) << self->LeftTheta
+          << " LeftPhi=" << std::setw(3) << self->LeftPhi
+          << " LeftL=" << std::setw(3) << self->LeftL
+          << " RightTheta=" << std::setw(3) << self->RightTheta
+          << " RightPhi=" << std::setw(3) << self->RightPhi
+          << " RightL=" << std::setw(3) << self->RightL << std::endl;
 
       Vecteur3D LeftHand = self->Transform(self->LeftTheta * M_PI / 180.0, self->LeftPhi * M_PI / 180.0, self->LeftL);
       self->LeftX = LeftHand.x - distance2strings / 2.0;

@@ -23,6 +23,8 @@
  namespace gametrak {
 
   GameTrak::GameTrak(void) {
+    debugLevel = 0;
+
     rawLeftTheta = 0;
     rawLeftPhi = 0;
     rawLeftL = 0;

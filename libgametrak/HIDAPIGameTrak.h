@@ -36,6 +36,9 @@ namespace gametrak {
 
     bool run; // for the Loop thread
 
+    bool pictrak; // Jan Ciger Pictrak board
+    std::string serial_number;
+
 #ifdef WIN32
   HANDLE hThreads[1];
   DWORD dwThreadId;

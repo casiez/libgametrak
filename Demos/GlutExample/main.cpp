@@ -308,6 +308,7 @@ int main(int argc, char* argv[])
     glutReshapeFunc(reshape);
 
     try {
+        //gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&pictrak=true&serial_number=0001") ;
         gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
         gt->setGameTrakCallback(GameTrakCallback) ;
     } catch (std::runtime_error e) {

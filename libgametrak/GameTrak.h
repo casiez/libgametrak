@@ -30,6 +30,7 @@ namespace gametrak {
   class GameTrak {
 
   protected:
+    int debugLevel;
     // Raw values from encoders
     double rawLeftTheta, rawLeftPhi, rawLeftL;
     double rawRightTheta, rawRightPhi, rawRightL;
