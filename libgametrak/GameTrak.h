@@ -51,6 +51,7 @@ namespace gametrak {
     double rawRightThetaf, rawRightPhif, rawRightLf;
 
     // calibration values
+    bool useCalibration;
     bool calibrating;
     bool calibrated;
 

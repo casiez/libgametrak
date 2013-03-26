@@ -100,8 +100,10 @@ namespace gametrak {
     URI::getQueryArg(uri.query, "marl", &maxRawRightL) ;
 
 
+    // Pictrak mod: http://janoc.rd-h.com/archives/129
     pictrak = false;
     URI::getQueryArg(uri.query, "pictrak", &pictrak) ;
+    URI::getQueryArg(uri.query, "useCalibration", &useCalibration) ;
 
     run = true;
 
@@ -205,7 +207,7 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
       double stringLength = 3000.0; // mm - need to be better measured
       double distance2strings = 100.0; // mm - need to be better measured
 
-      if (self->calibrated) {
+      if (self->useCalibration && self->calibrated) {
         double mid = 4096.0/2.0;
 
         double midLeftTheta = self->maxRawLeftTheta - self->minRawLeftTheta;

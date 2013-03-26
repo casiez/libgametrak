@@ -70,6 +70,7 @@
     RightZ = 0;
 
     // Calibration
+    useCalibration = false;
     calibrating = false;
     calibrated = false;
 
