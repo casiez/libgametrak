@@ -45,7 +45,8 @@ int
 main(int argc, char** argv) {
   try {
 
-    gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&pictrak=true") ;
+    gt= GameTrak::create(argc>1?argv[1]:"") ;
+    //gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&pictrak=true") ;
     //gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&devicePath=USB_05ac_0237_fa120000") ;
     gt->setGameTrakCallback(GameTrakCallback) ;
 

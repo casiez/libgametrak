@@ -33,6 +33,8 @@
     rawRightL = 0;
     button = false;
 
+    filteringEnabled = true;
+
     mincutoff = 1.0; 
     beta = 0.001;
     dcutoff = 1.0;
@@ -97,6 +99,11 @@
   GameTrak *
   GameTrak::create(std::string device_uri) {
   	return new HIDAPIGameTrak(device_uri);
+  }
+
+  void GameTrak::tuneFiltering(double mincutoff, double beta) {
+    this->mincutoff = mincutoff;
+    this->beta = beta;
   }
 
   void GameTrak::FilterRawvalues(double timestamp) {

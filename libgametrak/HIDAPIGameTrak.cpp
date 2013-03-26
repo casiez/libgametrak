@@ -23,7 +23,11 @@ namespace gametrak {
   HIDAPIGameTrak::HIDAPIGameTrak(URI uri):GameTrak() {
 
     URI::getQueryArg(uri.query, "debugLevel", &debugLevel) ;
+    serial_number = "";
     URI::getQueryArg(uri.query, "serial_number", &serial_number) ;
+
+    devicePath = "";
+    URI::getQueryArg(uri.query, "devicePath", &devicePath) ;
 
     // Enumerate and print the HID devices on the system
     struct hid_device_info *devs, *cur_dev;
@@ -43,9 +47,6 @@ namespace gametrak {
       cur_dev = cur_dev->next;
     }
     hid_free_enumeration(devs);
-
-    devicePath = "";
-    URI::getQueryArg(uri.query, "devicePath", &devicePath) ;
 
     if (devicePath != "") {
       // Open the device using device path
@@ -68,7 +69,11 @@ namespace gametrak {
       }
     }
 
-    //std::wstring product_string(cur_dev->product_string);
+    // Filtering
+    URI::getQueryArg(uri.query, "filter", &filteringEnabled) ;
+    URI::getQueryArg(uri.query, "mincutoff", &mincutoff) ;
+    URI::getQueryArg(uri.query, "beta", &beta) ;
+    URI::getQueryArg(uri.query, "dcutoff", &dcutoff) ;
 
     rawLeftThetafPrev = 0;
     rawLeftPhifPrev = 0;
@@ -167,7 +172,8 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
       TimeStamp::inttime now = TimeStamp::createAsInt();
 
-      self->FilterRawvalues(now * 1.0E-9);
+      if (self->filteringEnabled)
+        self->FilterRawvalues(now * 1.0E-9);
 
       // If position changed then call the callback
       /*

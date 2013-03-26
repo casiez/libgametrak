@@ -38,6 +38,7 @@ namespace gametrak {
     bool button;
 
     // OneEuroFilter settings
+    bool filteringEnabled;
     double mincutoff;
     double beta;
     double dcutoff;
@@ -101,6 +102,13 @@ namespace gametrak {
     virtual bool isActive(void) const { return true ; }
 
     virtual URI getURI(bool expanded=false) const = 0 ;
+
+    virtual void enableFiltering() {filteringEnabled = true;} ;
+    virtual void disableFiltering() {filteringEnabled = false;} ;
+    virtual void toggleFiltering() {filteringEnabled = !filteringEnabled;} ;
+
+    // http://www.lifl.fr/~casiez/1euro/
+    virtual void tuneFiltering(double mincutoff, double beta) ;
 
     virtual void setGameTrakCallback(GameTrakCallback callback, void *context=0) = 0 ;
 

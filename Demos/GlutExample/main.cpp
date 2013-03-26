@@ -309,7 +309,7 @@ int main(int argc, char* argv[])
 
     try {
         //gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&pictrak=true&serial_number=0001") ;
-        gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1") ;
+        gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&pictrak=true") ;
         gt->setGameTrakCallback(GameTrakCallback) ;
     } catch (std::runtime_error e) {
         std::cerr << "Runtime error: " << e.what() << std::endl ;
