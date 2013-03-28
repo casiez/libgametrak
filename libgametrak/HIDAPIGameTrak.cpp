@@ -153,8 +153,8 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
       self->rawLeftPhi = (buf[3] << 8) + buf[2];
       self->rawLeftL = (buf[5] << 8) + buf[4];
 
-      self->rawRightTheta = (buf[7] << 8) + buf[8];
-      self->rawRightPhi = (buf[9] << 8) + buf[6];
+      self->rawRightTheta = (buf[7] << 8) + buf[6];
+      self->rawRightPhi = (buf[9] << 8) + buf[7];
       self->rawRightL = (buf[11] << 8) + buf[10];
 
       bool button;
