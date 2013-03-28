@@ -203,9 +203,9 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
 
       // Metric values
-      double angleMax = 30.0; // degrees - need to be better measured
-      double stringLength = 3000.0; // mm - need to be better measured
-      double distance2strings = 100.0; // mm - need to be better measured
+      double angleMax = 34.7; // degrees - measured (default value was 30.0)
+      double stringLength = 3065.0; // mm - measured (default value was 3000.0)
+      double distance2strings = 130.0; // mm - measured (default value was 100.0)
 
       if (self->useCalibration && self->calibrated) {
         double mid = 4096.0/2.0;
