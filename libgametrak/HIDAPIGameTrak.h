@@ -52,6 +52,10 @@ namespace gametrak {
     double rawLeftThetafPrev, rawLeftPhifPrev, rawLeftLfPrev,
       rawRightThetafPrev, rawRightPhifPrev, rawRightLfPrev;
 
+    void connect() ;
+
+    volatile bool deviceConnected;
+
   public:
   
     HIDAPIGameTrak(URI uri) ;

@@ -77,6 +77,8 @@ GameTrakCallback(void *context,
     gametrakRightHand.y=righty;
     gametrakRightHand.z=rightz;
 
+    button_pressed = button;
+
     if (debug) {
         double freq = 1/((timestamp - last_time) * 1.0E-9);
         std::cout << timestamp << " ns, " 

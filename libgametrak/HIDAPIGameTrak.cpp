@@ -48,26 +48,9 @@ namespace gametrak {
     }
     hid_free_enumeration(devs);
 
-    if (devicePath != "") {
-      // Open the device using device path
-      handle = hid_open_path(devicePath.c_str());
-    } else {
-      // Open the device using the VID, PID,
-      // and optionally the Serial number.
-      try {
-        if (serial_number != "") {
-          std::wstring widestr = std::wstring(serial_number.begin(), serial_number.end());
-          handle = hid_open(0x14B7, 0x0982, (widestr.c_str()));
-        }
-        else
-          handle = hid_open(0x14B7, 0x0982, NULL);
-        if (handle == NULL) {
-          throw std::runtime_error("HIDAPIGameTrak: pb opening GameTrak") ;
-        }
-      } catch (std::exception e) {
-        std::cerr << "Exception with hid_open: " << e.what() << std::endl ;
-      }
-    }
+    deviceConnected = false;
+
+    connect();
 
     // Filtering
     URI::getQueryArg(uri.query, "filter", &filteringEnabled) ;
@@ -118,6 +101,39 @@ namespace gametrak {
 #endif
   }
 
+
+void HIDAPIGameTrak::connect() {
+
+    while (!deviceConnected) {
+      // Open the device using the VID, PID,
+      // and optionally the Serial number.
+      try {
+          std::cout << "Connecting..." << std::endl;
+          if (devicePath != "") {
+            // Open the device using device path
+            handle = hid_open_path(devicePath.c_str());
+            if (handle != NULL) deviceConnected = true;
+          } else {
+            if (serial_number != "") {
+              std::wstring widestr = std::wstring(serial_number.begin(), serial_number.end());
+              handle = hid_open(0x14B7, 0x0982, (widestr.c_str()));
+              if (handle != NULL) deviceConnected = true;
+            } else {
+              handle = hid_open(0x14B7, 0x0982, NULL);
+              if (handle != NULL) deviceConnected = true;
+          }
+          if (handle == NULL) {
+              throw std::runtime_error("HIDAPIGameTrak: pb opening GameTrak") ;
+          } 
+        }
+      } catch (std::exception e) {
+          //std::cerr << "Exception with hid_open: " << e.what() << std::endl ;
+          if (debugLevel > 0) std::cout << "Trying to connect..." << std::endl;
+      }
+      usleep(200000);
+    }
+}
+
 #ifdef WIN32
 DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 {
@@ -130,142 +146,154 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
     HIDAPIGameTrak *self = (HIDAPIGameTrak*)context ;
 
-    hid_device *handle = self->handle;
 
     unsigned char buf[16];
 
+    int res = 0;
+
     while (self->run) {
-      // Read requested state
-      int res = hid_read(handle, buf, 16);
-      if (res < 0)
-        throw std::runtime_error("HIDAPIGameTrak: hid_read error") ; 
+      if (self->deviceConnected) {
+        try {
+          // Read requested state
+          res = hid_read(self->handle, buf, 16);
+          if (res < 0)
+            throw std::runtime_error("HIDAPIGameTrak: hid_read error") ;
+        } catch (std::exception e) {
+          self->deviceConnected = false;
+          self->handle = NULL;
+          if (self->debugLevel > 0) std::cout << "Trying to reconnect ..." << std::endl;
+          self->connect();
+        }
 
-      if (self->debugLevel > 2) {
-        std::cout << "Raw buffer = ";
-        for (int i=0; i<16; i++) std::cout << (int)buf[i] << " ";
-        std::cout << std::endl;
-      }
-
-      if (self->pictrak)
-        self->rawLeftTheta = ((buf[1] << 8) + buf[0]);
-      else
-        self->rawLeftTheta = (buf[15] << 8) + buf[14];
-      self->rawLeftPhi = (buf[3] << 8) + buf[2];
-      self->rawLeftL = (buf[5] << 8) + buf[4];
-
-      self->rawRightTheta = (buf[7] << 8) + buf[6];
-      self->rawRightPhi = (buf[9] << 8) + buf[7];
-      self->rawRightL = (buf[11] << 8) + buf[10];
-
-      bool button;
-      if (self->pictrak)
-        button = buf[12] == 1;
-      else
-        button = buf[12] == 16;
-
-      if (self->debugLevel > 1) 
-        std::cout << "LeftRawTheta=" << std::setw(3) << self->rawLeftTheta
-          << " LeftRawPhi=" << std::setw(3) << self->rawLeftPhi
-          << " LeftRawL=" << std::setw(3) << self->rawLeftL
-          << " RightRawTheta=" << std::setw(3) << self->rawRightTheta
-          << " RightRawPhi=" << std::setw(3) << self->rawRightPhi
-          << " RightRawL=" << std::setw(3) << self->rawRightL << std::endl;
-
-
-      TimeStamp::inttime now = TimeStamp::createAsInt();
-
-      if (self->filteringEnabled)
-        self->FilterRawvalues(now * 1.0E-9);
-
-      // If position changed then call the callback
-      /*
-      bool send = false;
-      if ((floor(self->rawLeftThetaf) != self->rawLeftThetafPrev) ||
-          (floor(self->rawLeftPhif) != self->rawLeftPhifPrev) ||
-          (floor(self->rawLeftLf) != self->rawLeftLfPrev) ||
-          (floor(self->rawRightThetaf) != self->rawRightThetafPrev) ||
-          (floor(self->rawRightPhif) != self->rawRightPhifPrev) ||
-          (floor(self->rawRightLf) != self->rawRightLfPrev)) {
-          send = true;
-       }
-
-      self->rawLeftThetafPrev = floor(self->rawLeftThetaf);
-      self->rawLeftPhifPrev = floor(self->rawLeftPhif);
-      self->rawLeftLfPrev = floor(self->rawLeftLf);
-      self->rawRightThetafPrev = floor(self->rawRightThetaf);
-      self->rawRightPhifPrev = floor(self->rawRightPhif);
-      self->rawRightLfPrev = floor(self->rawRightLf);
-    */
-
-      if (self->calibrating) {
-        self->calibrate();
-      }
-
-
-      // Metric values
-      double angleMax = 34.7; // degrees - measured (default value was 30.0)
-      double stringLength = 3065.0; // mm - measured (default value was 3000.0)
-      double distance2strings = 130.0; // mm - measured (default value was 100.0)
-
-      if (self->useCalibration && self->calibrated) {
-        double mid = 4096.0/2.0;
-
-        double midLeftTheta = self->maxRawLeftTheta - self->minRawLeftTheta;
-        self->LeftTheta = (self->rawLeftThetaf - midLeftTheta) * angleMax / midLeftTheta;
-        double midLeftPhi = self->maxRawLeftPhi - self->minRawLeftPhi;
-        self->LeftPhi = -(self->rawLeftPhif - midLeftPhi) * angleMax / midLeftPhi;
-        self->LeftL = - stringLength/(self->maxRawLeftL - self->minRawLeftL) * self->rawLeftLf + stringLength;
-
-        double midRightTheta = self->maxRawRightTheta - self->minRawRightTheta;
-        self->RightTheta = -(self->rawRightThetaf - midRightTheta) * angleMax / midRightTheta;
-        double midRightPhi = self->maxRawRightPhi - self->minRawRightPhi;
-        self->RightPhi = -(self->rawRightPhif - midRightPhi) * angleMax / midRightPhi;
-        self->RightL = - stringLength/(self->maxRawRightL - self->minRawRightL) * self->rawRightLf + stringLength; 
-      } else { 
-        double mid = 4096.0/2.0;
+        if (self->debugLevel > 2) {
+          std::cout << "Raw buffer = ";
+          for (int i=0; i<16; i++) std::cout << (int)buf[i] << " ";
+          std::cout << std::endl;
+        }
 
         if (self->pictrak)
-          self->LeftTheta = -(self->rawLeftThetaf - mid) * angleMax / mid;
+          self->rawLeftTheta = ((buf[1] << 8) + buf[0]);
         else
-          self->LeftTheta = (self->rawLeftThetaf - mid) * angleMax / mid;
-        
-        self->LeftPhi = -(self->rawLeftPhif - mid) * angleMax / mid;
-        self->LeftL = - stringLength/4096.0 * self->rawLeftLf + stringLength;
+          self->rawLeftTheta = (buf[15] << 8) + buf[14];
+        self->rawLeftPhi = (buf[3] << 8) + buf[2];
+        self->rawLeftL = (buf[5] << 8) + buf[4];
 
-        self->RightTheta = -(self->rawRightThetaf - mid) * angleMax / mid;
-        self->RightPhi = -(self->rawRightPhif - mid) * angleMax / mid;
-        self->RightL = - stringLength/4096.0 * self->rawRightLf + stringLength; 
+        self->rawRightTheta = (buf[7] << 8) + buf[6];
+        self->rawRightPhi = (buf[9] << 8) + buf[7];
+        self->rawRightL = (buf[11] << 8) + buf[10];
+
+        bool button;
+        if (self->pictrak)
+          button = buf[12] == 1;
+        else
+          button = buf[12] == 16;
+
+        if (self->debugLevel > 1) 
+          std::cout << "LeftRawTheta=" << std::setw(3) << self->rawLeftTheta
+            << " LeftRawPhi=" << std::setw(3) << self->rawLeftPhi
+            << " LeftRawL=" << std::setw(3) << self->rawLeftL
+            << " RightRawTheta=" << std::setw(3) << self->rawRightTheta
+            << " RightRawPhi=" << std::setw(3) << self->rawRightPhi
+            << " RightRawL=" << std::setw(3) << self->rawRightL << std::endl;
+
+
+        TimeStamp::inttime now = TimeStamp::createAsInt();
+
+        if (self->filteringEnabled)
+          self->FilterRawvalues(now * 1.0E-9);
+
+        // If position changed then call the callback
+        /*
+        bool send = false;
+        if ((floor(self->rawLeftThetaf) != self->rawLeftThetafPrev) ||
+            (floor(self->rawLeftPhif) != self->rawLeftPhifPrev) ||
+            (floor(self->rawLeftLf) != self->rawLeftLfPrev) ||
+            (floor(self->rawRightThetaf) != self->rawRightThetafPrev) ||
+            (floor(self->rawRightPhif) != self->rawRightPhifPrev) ||
+            (floor(self->rawRightLf) != self->rawRightLfPrev)) {
+            send = true;
+         }
+
+        self->rawLeftThetafPrev = floor(self->rawLeftThetaf);
+        self->rawLeftPhifPrev = floor(self->rawLeftPhif);
+        self->rawLeftLfPrev = floor(self->rawLeftLf);
+        self->rawRightThetafPrev = floor(self->rawRightThetaf);
+        self->rawRightPhifPrev = floor(self->rawRightPhif);
+        self->rawRightLfPrev = floor(self->rawRightLf);
+      */
+
+        if (self->calibrating) {
+          self->calibrate();
+        }
+
+
+        // Metric values
+        double angleMax = 34.7; // degrees - measured (default value was 30.0)
+        double stringLength = 3065.0; // mm - measured (default value was 3000.0)
+        double distance2strings = 130.0; // mm - measured (default value was 100.0)
+
+        if (self->useCalibration && self->calibrated) {
+          double mid = 4096.0/2.0;
+
+          double midLeftTheta = self->maxRawLeftTheta - self->minRawLeftTheta;
+          self->LeftTheta = (self->rawLeftThetaf - midLeftTheta) * angleMax / midLeftTheta;
+          double midLeftPhi = self->maxRawLeftPhi - self->minRawLeftPhi;
+          self->LeftPhi = -(self->rawLeftPhif - midLeftPhi) * angleMax / midLeftPhi;
+          self->LeftL = - stringLength/(self->maxRawLeftL - self->minRawLeftL) * self->rawLeftLf + stringLength;
+
+          double midRightTheta = self->maxRawRightTheta - self->minRawRightTheta;
+          self->RightTheta = -(self->rawRightThetaf - midRightTheta) * angleMax / midRightTheta;
+          double midRightPhi = self->maxRawRightPhi - self->minRawRightPhi;
+          self->RightPhi = -(self->rawRightPhif - midRightPhi) * angleMax / midRightPhi;
+          self->RightL = - stringLength/(self->maxRawRightL - self->minRawRightL) * self->rawRightLf + stringLength; 
+        } else { 
+          double mid = 4096.0/2.0;
+
+          if (self->pictrak)
+            self->LeftTheta = -(self->rawLeftThetaf - mid) * angleMax / mid;
+          else
+            self->LeftTheta = (self->rawLeftThetaf - mid) * angleMax / mid;
+          
+          self->LeftPhi = -(self->rawLeftPhif - mid) * angleMax / mid;
+          self->LeftL = - stringLength/4096.0 * self->rawLeftLf + stringLength;
+
+          self->RightTheta = -(self->rawRightThetaf - mid) * angleMax / mid;
+          self->RightPhi = -(self->rawRightPhif - mid) * angleMax / mid;
+          self->RightL = - stringLength/4096.0 * self->rawRightLf + stringLength; 
+        }
+
+        if (self->debugLevel > 1) 
+          std::cout << "LeftTheta=" << std::setw(3) << self->LeftTheta
+            << " LeftPhi=" << std::setw(3) << self->LeftPhi
+            << " LeftL=" << std::setw(3) << self->LeftL
+            << " RightTheta=" << std::setw(3) << self->RightTheta
+            << " RightPhi=" << std::setw(3) << self->RightPhi
+            << " RightL=" << std::setw(3) << self->RightL << std::endl;
+
+        Vecteur3D LeftHand = self->Transform(self->LeftTheta * M_PI / 180.0, self->LeftPhi * M_PI / 180.0, self->LeftL);
+        self->LeftX = LeftHand.x - distance2strings / 2.0;
+        self->LeftY = LeftHand.y;
+        self->LeftZ = LeftHand.z;
+
+        Vecteur3D RightHand = self->Transform(self->RightTheta * M_PI / 180.0, self->RightPhi * M_PI / 180.0, self->RightL);
+        self->RightX = RightHand.x + distance2strings / 2.0;
+        self->RightY = RightHand.y;
+        self->RightZ = RightHand.z;
+
+        // bool send = true;
+        // if (send && (self->callback != 0))
+        //   self->callback(self->callback_context, now, floor(self->rawLeftThetaf), floor(self->rawLeftPhif), floor(self->rawLeftLf), floor(self->rawRightThetaf), floor(self->rawRightPhif), floor(self->rawRightLf), button);
+
+        // bool send = true;
+        // if (send && (self->callback != 0))
+        //   self->callback(self->callback_context, now, self->LeftTheta, self->LeftPhi, self->LeftL, self->RightTheta, self->RightPhi, self->RightL, button);
+
+        bool send = true;
+        if (send && (self->callback != 0)) 
+          self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
+      } else {
+        usleep(100000);
       }
-
-      if (self->debugLevel > 1) 
-        std::cout << "LeftTheta=" << std::setw(3) << self->LeftTheta
-          << " LeftPhi=" << std::setw(3) << self->LeftPhi
-          << " LeftL=" << std::setw(3) << self->LeftL
-          << " RightTheta=" << std::setw(3) << self->RightTheta
-          << " RightPhi=" << std::setw(3) << self->RightPhi
-          << " RightL=" << std::setw(3) << self->RightL << std::endl;
-
-      Vecteur3D LeftHand = self->Transform(self->LeftTheta * M_PI / 180.0, self->LeftPhi * M_PI / 180.0, self->LeftL);
-      self->LeftX = LeftHand.x - distance2strings / 2.0;
-      self->LeftY = LeftHand.y;
-      self->LeftZ = LeftHand.z;
-
-      Vecteur3D RightHand = self->Transform(self->RightTheta * M_PI / 180.0, self->RightPhi * M_PI / 180.0, self->RightL);
-      self->RightX = RightHand.x + distance2strings / 2.0;
-      self->RightY = RightHand.y;
-      self->RightZ = RightHand.z;
-
-      // bool send = true;
-      // if (send && (self->callback != 0))
-      //   self->callback(self->callback_context, now, floor(self->rawLeftThetaf), floor(self->rawLeftPhif), floor(self->rawLeftLf), floor(self->rawRightThetaf), floor(self->rawRightPhif), floor(self->rawRightLf), button);
-
-      // bool send = true;
-      // if (send && (self->callback != 0))
-      //   self->callback(self->callback_context, now, self->LeftTheta, self->LeftPhi, self->LeftL, self->RightTheta, self->RightPhi, self->RightL, button);
-
-      bool send = true;
-      if (send && (self->callback != 0))
-        self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
     }
 
     return 0 ;
