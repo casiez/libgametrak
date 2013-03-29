@@ -44,7 +44,7 @@ bool perspectiveOrthoPointers = false;
 
 double HandsDistance = 0.0;
 
-Vecteur3D Scale = Vecteur3D(0.03,0.04,0.04);
+Vecteur3D Scale = Vecteur3D(0.015,0.02,0.02);//Vecteur3D(0.03,0.04,0.04);
 Vecteur3D Translate = Vecteur3D(0.0,-5.0,0.0);
 
 
@@ -235,6 +235,7 @@ void keyboard(unsigned char touch,int x,int y)
     switch (touch)
     {
     case 27:
+    	std::cout << gt->leaveCalibration() << std::endl;
         exit(0);
         break;
     case 'd':
@@ -310,9 +311,10 @@ int main(int argc, char* argv[])
     glutReshapeFunc(reshape);
 
     try {
-        //gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&pictrak=true&serial_number=0001") ;
-        gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&pictrak=true") ;
-        gt->setGameTrakCallback(GameTrakCallback) ;
+        //gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=3&useCalibration=true&filter=true") ;
+        gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=3&pictrak=true&useCalibration=true&filter=true");//&milt=  0&milp=  0&mill=  0&mirt=  3&mirp=  2&mirl=  0&malt=4091&malp=4091&mall=4091&mart=4095&marp=3855&marl=4091");
+        gt->setGameTrakCallback(GameTrakCallback);
+        gt->enterCalibration();
     } catch (std::runtime_error e) {
         std::cerr << "Runtime error: " << e.what() << std::endl ;
     } catch (std::exception e) {

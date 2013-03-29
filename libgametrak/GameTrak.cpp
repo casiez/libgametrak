@@ -128,6 +128,9 @@
 
   void GameTrak::enterCalibration()
   {
+  	if (this->debugLevel > 0) {
+        std::cout << "Entering in calibration mode." << std::endl;
+  	}
     calibrating = true;
     calibrated = false;
 
@@ -151,6 +154,9 @@
 
   std::string GameTrak::leaveCalibration()
   {
+  	if (this->debugLevel > 0) {
+        std::cout << "Leaving in calibration mode." << std::endl;
+  	}
     calibrating = false;
     calibrated = true;
     return getCalibrationString();
@@ -190,7 +196,9 @@
     if (rawRightPhi > maxRawRightPhi) maxRawRightPhi = rawRightPhi;
     if (rawRightL > maxRawRightL) maxRawRightL = rawRightL;
 
-    std::cout << getCalibrationString() << std::endl;
+	if (this->debugLevel > 1) {
+    	std::cout << getCalibrationString() << std::endl;
+	}
   }
 
   void

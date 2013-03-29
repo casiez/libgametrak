@@ -68,19 +68,21 @@ namespace gametrak {
     callback = 0 ;
     callback_context = 0 ;
 
-    URI::getQueryArg(uri.query, "milt", &minRawLeftTheta) ;
-    URI::getQueryArg(uri.query, "milp", &minRawLeftPhi) ;
-    URI::getQueryArg(uri.query, "mill", &minRawLeftL) ;
-    URI::getQueryArg(uri.query, "mirt", &minRawRightTheta) ;
-    URI::getQueryArg(uri.query, "mirp", &minRawRightPhi) ;
-    URI::getQueryArg(uri.query, "mirl", &minRawRightL) ;
+    if (URI::getQueryArg(uri.query, "milt", &minRawLeftTheta) &&
+    URI::getQueryArg(uri.query, "milp", &minRawLeftPhi) &&
+    URI::getQueryArg(uri.query, "mill", &minRawLeftL) &&
+    URI::getQueryArg(uri.query, "mirt", &minRawRightTheta) &&
+    URI::getQueryArg(uri.query, "mirp", &minRawRightPhi) &&
+    URI::getQueryArg(uri.query, "mirl", &minRawRightL) &&
 
-    URI::getQueryArg(uri.query, "malt", &maxRawLeftTheta) ;
-    URI::getQueryArg(uri.query, "malp", &maxRawLeftPhi) ;
-    URI::getQueryArg(uri.query, "mall", &maxRawLeftL) ;
-    URI::getQueryArg(uri.query, "mart", &maxRawRightTheta) ;
-    URI::getQueryArg(uri.query, "marp", &maxRawRightPhi) ;
-    URI::getQueryArg(uri.query, "marl", &maxRawRightL) ;
+    URI::getQueryArg(uri.query, "malt", &maxRawLeftTheta) &&
+    URI::getQueryArg(uri.query, "malp", &maxRawLeftPhi) &&
+    URI::getQueryArg(uri.query, "mall", &maxRawLeftL) &&
+    URI::getQueryArg(uri.query, "mart", &maxRawRightTheta) &&
+    URI::getQueryArg(uri.query, "marp", &maxRawRightPhi) &&
+    URI::getQueryArg(uri.query, "marl", &maxRawRightL)) {
+    	calibrated = true;
+    }
 
 
     // Pictrak mod: http://janoc.rd-h.com/archives/129
@@ -231,21 +233,35 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
         double angleMax = 34.7; // degrees - measured (default value was 30.0)
         double stringLength = 3065.0; // mm - measured (default value was 3000.0)
         double distance2strings = 130.0; // mm - measured (default value was 100.0)
+        double stringOffset = 35.0; // mm - measured
+        double mmPerRawVal;
+        if (self->pictrak)
+           mmPerRawVal = 200.0/186.0; // 
+        else
+           mmPerRawVal = 200.0/150.0;
 
-        if (self->useCalibration && self->calibrated) {
-          double mid = 4096.0/2.0;
+        if (self->useCalibration) {// && self->calibrated) {
+          //double mid = 4096.0/2.0;
 
-          double midLeftTheta = self->maxRawLeftTheta - self->minRawLeftTheta;
-          self->LeftTheta = (self->rawLeftThetaf - midLeftTheta) * angleMax / midLeftTheta;
-          double midLeftPhi = self->maxRawLeftPhi - self->minRawLeftPhi;
-          self->LeftPhi = -(self->rawLeftPhif - midLeftPhi) * angleMax / midLeftPhi;
-          self->LeftL = - stringLength/(self->maxRawLeftL - self->minRawLeftL) * self->rawLeftLf + stringLength;
+          double midLeftTheta = (self->maxRawLeftTheta - self->minRawLeftTheta)/2+self->minRawLeftTheta;
+          if (self->pictrak)
+	          self->LeftTheta = -(self->rawLeftThetaf - midLeftTheta) * angleMax / (midLeftTheta-self->minRawLeftTheta);
+	      else
+	          self->LeftTheta = (self->rawLeftThetaf - midLeftTheta) * angleMax / (midLeftTheta-self->minRawLeftTheta);
+          double midLeftPhi = (self->maxRawLeftPhi - self->minRawLeftPhi)/2+self->minRawLeftPhi;
+          self->LeftPhi = -(self->rawLeftPhif - midLeftPhi) * angleMax / (midLeftPhi-self->minRawLeftPhi);
+          self->LeftL = stringOffset+mmPerRawVal*(self->maxRawLeftL-self->rawLeftLf);//((stringLength-stringOffset)/(self->maxRawLeftL - self->minRawLeftL)) * (self->maxRawLeftL-self->rawLeftLf);
 
-          double midRightTheta = self->maxRawRightTheta - self->minRawRightTheta;
+          double midRightTheta = (self->maxRawRightTheta - self->minRawRightTheta)/2+self->minRawRightTheta;
+          self->RightTheta = -(self->rawRightThetaf - midRightTheta) * angleMax / (midRightTheta-self->minRawRightTheta);
+          double midRightPhi = (self->maxRawRightPhi - self->minRawRightPhi)/2+self->minRawRightPhi;
+          self->RightPhi = -(self->rawRightPhif - midRightPhi) * angleMax / (midRightPhi-self->minRawRightPhi);
+          self->RightL = stringOffset+mmPerRawVal*(self->maxRawRightL-self->rawRightLf);//stringOffset+((stringLength-stringOffset)/(self->maxRawRightL - self->minRawRightL)) * (self->maxRawRightL-self->rawRightLf);
+          /*double midRightTheta = (self->maxRawRightTheta - self->minRawRightTheta);
           self->RightTheta = -(self->rawRightThetaf - midRightTheta) * angleMax / midRightTheta;
-          double midRightPhi = self->maxRawRightPhi - self->minRawRightPhi;
+          double midRightPhi = (self->maxRawRightPhi - self->minRawRightPhi);
           self->RightPhi = -(self->rawRightPhif - midRightPhi) * angleMax / midRightPhi;
-          self->RightL = - stringLength/(self->maxRawRightL - self->minRawRightL) * self->rawRightLf + stringLength; 
+          self->RightL = - stringLength/(self->maxRawRightL - self->minRawRightL) * self->rawRightLf + stringLength; */
         } else { 
           double mid = 4096.0/2.0;
 
