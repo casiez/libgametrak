@@ -236,9 +236,9 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
         double stringOffset = 35.0; // mm - measured
         double mmPerRawVal;
         if (self->pictrak)
-           mmPerRawVal = 200.0/186.0; // 
+           mmPerRawVal = 200.0/186.0; // measured on one pictrak only
         else
-           mmPerRawVal = 200.0/150.0;
+           mmPerRawVal = 200.0/150.0; // measured on one normal gt only
 
         if (self->useCalibration) {// && self->calibrated) {
           //double mid = 4096.0/2.0;
