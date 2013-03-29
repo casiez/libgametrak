@@ -155,7 +155,7 @@
   std::string GameTrak::leaveCalibration()
   {
   	if (this->debugLevel > 0) {
-        std::cout << "Leaving in calibration mode." << std::endl;
+        std::cout << "Leaving calibration mode." << std::endl;
   	}
     calibrating = false;
     calibrated = true;
