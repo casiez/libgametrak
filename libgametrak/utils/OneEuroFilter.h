@@ -60,6 +60,8 @@ class OneEuroFilter {
 
   double alpha(double cutoff) ;
 
+public:
+
   void setFrequency(double f) ;
 
   void setMinCutoff(double mc) ;
@@ -68,7 +70,6 @@ class OneEuroFilter {
 
   void setDerivateCutoff(double dc) ;
 
-public:
 
   OneEuroFilter(double freq, 
 		double mincutoff=1.0, double beta_=0.0, double dcutoff=1.0) ;

@@ -87,7 +87,6 @@
     maxRawRightTheta  = 4096;
     maxRawRightPhi  = 4096;
     maxRawRightL  = 4096;
-
   }
 
   GameTrak *
@@ -105,6 +104,19 @@
   void GameTrak::tuneFiltering(double mincutoff, double beta) {
     this->mincutoff = mincutoff;
     this->beta = beta;
+    filterLeftTheta->setMinCutoff(mincutoff);
+    filterLeftPhi->setMinCutoff(mincutoff);
+    filterLeftL->setMinCutoff(mincutoff);
+    filterRightTheta->setMinCutoff(mincutoff);
+    filterRightPhi->setMinCutoff(mincutoff);
+    filterRightL->setMinCutoff(mincutoff);
+
+    filterLeftTheta->setBeta(mincutoff);
+    filterLeftPhi->setBeta(mincutoff);
+    filterLeftL->setBeta(mincutoff);
+    filterRightTheta->setBeta(mincutoff);
+    filterRightPhi->setBeta(mincutoff);
+    filterRightL->setBeta(mincutoff);
   }
 
   void GameTrak::FilterRawvalues(double timestamp) {

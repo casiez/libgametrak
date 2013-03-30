@@ -241,6 +241,9 @@ void keyboard(unsigned char touch,int x,int y)
     case 'd':
         debug=!debug;
         break;
+    case 'f':
+        gt->toggleFiltering();
+        break;
     case 'r':
         RT.ReStart();
         break;

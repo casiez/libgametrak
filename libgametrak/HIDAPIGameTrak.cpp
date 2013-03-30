@@ -21,8 +21,8 @@ namespace gametrak {
 
 
   HIDAPIGameTrak::HIDAPIGameTrak(URI uri):GameTrak() {
-
     URI::getQueryArg(uri.query, "debugLevel", &debugLevel) ;
+
     serial_number = "";
     URI::getQueryArg(uri.query, "serial_number", &serial_number) ;
 
@@ -84,10 +84,6 @@ namespace gametrak {
     	calibrated = true;
     }
 
-
-    // Pictrak mod: http://janoc.rd-h.com/archives/129
-    pictrak = false;
-    URI::getQueryArg(uri.query, "pictrak", &pictrak) ;
     URI::getQueryArg(uri.query, "useCalibration", &useCalibration) ;
 
     run = true;
@@ -103,8 +99,14 @@ namespace gametrak {
 #endif
   }
 
+bool HIDAPIGameTrak::isActive(void) const {
+  return deviceConnected ;
+}
 
 void HIDAPIGameTrak::connect() {
+
+    // Pictrak mod: http://janoc.rd-h.com/archives/129
+    pictrak = false;
 
     while (!deviceConnected) {
       // Open the device using the VID, PID,
@@ -128,6 +130,13 @@ void HIDAPIGameTrak::connect() {
               throw std::runtime_error("HIDAPIGameTrak: pb opening GameTrak") ;
           } 
         }
+        // Check if we have a PicTrak
+        if (handle != NULL) {
+          wchar_t product[255];
+          int res = hid_get_product_string(handle, product, 255);
+          if (wcscmp(product,L"GameTrak PIC") == 0)
+            pictrak = true;
+        }
       } catch (std::exception e) {
           //std::cerr << "Exception with hid_open: " << e.what() << std::endl ;
           if (debugLevel > 0) std::cout << "Trying to connect..." << std::endl;
@@ -147,7 +156,6 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 #endif
 
     HIDAPIGameTrak *self = (HIDAPIGameTrak*)context ;
-
 
     unsigned char buf[16];
 
@@ -201,28 +209,36 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
         TimeStamp::inttime now = TimeStamp::createAsInt();
 
-        if (self->filteringEnabled)
+        bool send = true; 
+        if (self->filteringEnabled) {
           self->FilterRawvalues(now * 1.0E-9);
 
-        // If position changed then call the callback
-        /*
-        bool send = false;
-        if ((floor(self->rawLeftThetaf) != self->rawLeftThetafPrev) ||
-            (floor(self->rawLeftPhif) != self->rawLeftPhifPrev) ||
-            (floor(self->rawLeftLf) != self->rawLeftLfPrev) ||
-            (floor(self->rawRightThetaf) != self->rawRightThetafPrev) ||
-            (floor(self->rawRightPhif) != self->rawRightPhifPrev) ||
-            (floor(self->rawRightLf) != self->rawRightLfPrev)) {
-            send = true;
-         }
+          // If position changed then call the callback
 
-        self->rawLeftThetafPrev = floor(self->rawLeftThetaf);
-        self->rawLeftPhifPrev = floor(self->rawLeftPhif);
-        self->rawLeftLfPrev = floor(self->rawLeftLf);
-        self->rawRightThetafPrev = floor(self->rawRightThetaf);
-        self->rawRightPhifPrev = floor(self->rawRightPhif);
-        self->rawRightLfPrev = floor(self->rawRightLf);
-      */
+          send = false;
+          if ((floor(self->rawLeftThetaf) != self->rawLeftThetafPrev) ||
+              (floor(self->rawLeftPhif) != self->rawLeftPhifPrev) ||
+              (floor(self->rawLeftLf) != self->rawLeftLfPrev) ||
+              (floor(self->rawRightThetaf) != self->rawRightThetafPrev) ||
+              (floor(self->rawRightPhif) != self->rawRightPhifPrev) ||
+              (floor(self->rawRightLf) != self->rawRightLfPrev)) {
+              send = true;
+           } 
+
+          self->rawLeftThetafPrev = floor(self->rawLeftThetaf);
+          self->rawLeftPhifPrev = floor(self->rawLeftPhif);
+          self->rawLeftLfPrev = floor(self->rawLeftLf);
+          self->rawRightThetafPrev = floor(self->rawRightThetaf);
+          self->rawRightPhifPrev = floor(self->rawRightPhif);
+          self->rawRightLfPrev = floor(self->rawRightLf);
+        } else {
+          self->rawLeftThetaf = self->rawLeftTheta;
+          self->rawLeftPhif = self->rawLeftPhi;
+          self->rawLeftLf =self->rawLeftL;
+          self->rawRightThetaf = self->rawRightTheta;
+          self->rawRightPhif = self->rawRightPhi;
+          self->rawRightLf = self->rawRightL;
+        }     
 
         if (self->calibrating) {
           self->calibrate();
@@ -304,7 +320,6 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
         // if (send && (self->callback != 0))
         //   self->callback(self->callback_context, now, self->LeftTheta, self->LeftPhi, self->LeftL, self->RightTheta, self->RightPhi, self->RightL, button);
 
-        bool send = true;
         if (send && (self->callback != 0)) 
           self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
       } else {
