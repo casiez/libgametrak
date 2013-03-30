@@ -99,9 +99,9 @@ namespace gametrak {
 #endif
   }
 
-bool HIDAPIGameTrak::isActive(void) const {
+/*bool HIDAPIGameTrak::isActive(void) const {
   return deviceConnected ;
-}
+}*/
 
 void HIDAPIGameTrak::connect() {
 

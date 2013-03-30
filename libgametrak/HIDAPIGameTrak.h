@@ -67,8 +67,6 @@ namespace gametrak {
     static void *eventloop(void *self) ;
 #endif
 
-    bool isActive(void) const ;
-
     void setGameTrakCallback(GameTrakCallback callback, void *context) ;
 
     ~HIDAPIGameTrak() ;

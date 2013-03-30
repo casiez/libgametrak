@@ -40,11 +40,9 @@ using namespace gametrak;
 
 RandomTargets RT;
 
-bool perspectiveOrthoPointers = false;
-
 double HandsDistance = 0.0;
 
-Vecteur3D Scale = Vecteur3D(0.015,0.02,0.02);//Vecteur3D(0.03,0.04,0.04);
+Vecteur3D Scale = Vecteur3D(0.02,0.02,0.02);
 Vecteur3D Translate = Vecteur3D(0.0,-5.0,0.0);
 
 
@@ -60,6 +58,8 @@ bool debug = false;
 GameTrak *gt = 0 ;
 TimeStamp::inttime last_time = 0 ;
 bool button_pressed = false ;
+
+bool showhelp = true;
 
 void
 GameTrakCallback(void *context, 
@@ -157,6 +157,7 @@ void Grid(float width, float height, float step)
 
 void display()
 {
+    char txt[500];
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -176,18 +177,6 @@ void display()
     LeftP.z *= Scale.z;
     RightP += Translate;
     LeftP += Translate;
-
-
-    if (perspectiveOrthoPointers)
-    {
-        float DistanceBetweenCameraAndWorldOrigin = 21;
-        float DistanceCameraScreen = 15;
-        RightP.x *= ((DistanceBetweenCameraAndWorldOrigin-RightP.z) / DistanceBetweenCameraAndWorldOrigin);
-        RightP.y *= ((DistanceBetweenCameraAndWorldOrigin-RightP.z) / DistanceBetweenCameraAndWorldOrigin);
-        //LeftP.x *= ((DistanceBetweenCameraAndWorldOrigin-LeftP.z) / DistanceCameraScreen);
-        //LeftP.y *= ((DistanceBetweenCameraAndWorldOrigin-LeftP.z) / DistanceCameraScreen);
-    }
-
 
     glPushMatrix();
     glTranslatef(0,-5,-20);
@@ -219,14 +208,42 @@ void display()
     if (RT.AllTargetsSelected()) RT.ReStart();
     if (debug)
     {
-        char txt[100];
+        glColor3f(0,0,1);
+        sprintf(txt,"%3.1f %3.1f %3.1f\r", LeftP.x, LeftP.y, LeftP.z);
+        GLDisplayString(txt, 0.05,0.95,0.1);
         glColor3f(1,0,0);
-
         sprintf(txt,"%3.1f %3.1f %3.1f\r", RightP.x, RightP.y, RightP.z);
-        GLDisplayString(txt, 0.1,0.9,0.2);
+        GLDisplayString(txt, 0.2,0.95,0.1);
     }
 
-    //sleep(20);
+    if (showhelp) {
+        glColor3f(0,0,1);
+        sprintf(txt,"[h] toggle help");
+        GLDisplayString(txt, 0.8,0.95,0.1);
+        sprintf(txt,"[f] toggle filtering");
+        GLDisplayString(txt, 0.8,0.9,0.1);
+        sprintf(txt,"[r] reinit targets");
+        GLDisplayString(txt, 0.8,0.85,0.1);
+        sprintf(txt,"[e] enter calibration");
+        GLDisplayString(txt, 0.8,0.8,0.1);
+        sprintf(txt,"[l] leave calibration");
+        GLDisplayString(txt, 0.8,0.75,0.1);
+        sprintf(txt,"[d] toggle debug");
+        GLDisplayString(txt, 0.8,0.7,0.1);
+        sprintf(txt,"[c] toggle calibration");
+        GLDisplayString(txt, 0.8,0.65,0.1);
+    }
+
+    if (gt!=NULL) {
+        if (gt->isCalibrating()) {
+            glColor3f(1,0.5,0);
+            //std::string s =  gt->getCalibrationString();
+            sprintf(txt,"%s",gt->getCalibrationString().c_str());
+            GLDisplayString(txt, 0.05,0.9,0.08);
+        }
+    }
+
+    usleep(20000);
     glutSwapBuffers();
 }
 
@@ -235,20 +252,29 @@ void keyboard(unsigned char touch,int x,int y)
     switch (touch)
     {
     case 27:
-    	std::cout << gt->leaveCalibration() << std::endl;
         exit(0);
         break;
     case 'd':
         debug=!debug;
         break;
+    case 'e':
+        gt->enterCalibration();
+        break;
+    case 'l': {
+        std::string calibString = gt->leaveCalibration();
+        std::cout << calibString << std::endl; }
+        break;
     case 'f':
         gt->toggleFiltering();
+        break;
+    case 'h':
+        showhelp = !showhelp;
         break;
     case 'r':
         RT.ReStart();
         break;
-    case 'p':
-        perspectiveOrthoPointers=!perspectiveOrthoPointers;
+    case 'c':
+        gt->toggleCalibration();
         break;
     }
 }
@@ -276,7 +302,6 @@ void reshape(int w,int h)
     glViewport(0, 0, (GLsizei) w, (GLsizei) h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    //glOrtho(-800.0, 800.0, -800.*h/(float)w, 800.0*h/(float)w, -1.0, 1.0);
     gluPerspective(45,w/h,1,100);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -296,7 +321,6 @@ int main(int argc, char* argv[])
     }
     else
 	//Allow to pass in fullscreen mode
-	//if(MessageBox(NULL, "Full screen mode?", "Options", MB_YESNO | MB_ICONQUESTION) == IDYES)
     {
         char txt[50];
         sprintf(txt, "%dx%d:24@60",glutGet(GLUT_SCREEN_WIDTH), glutGet(GLUT_SCREEN_HEIGHT));
@@ -313,11 +337,9 @@ int main(int argc, char* argv[])
     glutIdleFunc(idle);
     glutReshapeFunc(reshape);
 
-    try {
-        //gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=3&useCalibration=true&filter=true") ;
-        gt= GameTrak::create(argc>1?argv[1]:"any:?debugLevel=3&pictrak=true&useCalibration=true&filter=true");//&milt=  0&milp=  0&mill=  0&mirt=  3&mirp=  2&mirl=  0&malt=4091&malp=4091&mall=4091&mart=4095&marp=3855&marl=4091");
+    try {;
+        gt = GameTrak::create(argc>1?argv[1]:"");
         gt->setGameTrakCallback(GameTrakCallback);
-        gt->enterCalibration();
     } catch (std::runtime_error e) {
         std::cerr << "Runtime error: " << e.what() << std::endl ;
     } catch (std::exception e) {

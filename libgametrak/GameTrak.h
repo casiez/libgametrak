@@ -80,8 +80,6 @@ namespace gametrak {
 
     void calibrate() ;
 
-    std::string getCalibrationString() ;
-
     Vecteur3D Transform(double Theta, double Phi, double L) ;
 
   public:
@@ -97,16 +95,19 @@ namespace gametrak {
 
     static void idle(int milliseconds) ;
 
-    virtual void enterCalibration() ;
-    virtual std::string leaveCalibration() ;
+    void enterCalibration(void) ;
+    std::string leaveCalibration(void) ;
+    bool isCalibrating(void) ;
+    std::string getCalibrationString() ;
+    bool toggleCalibration(void) {useCalibration = !useCalibration; return useCalibration ;} ;
 
-    virtual bool isActive(void) const { return true ; }
+    virtual bool isActive(void) const {return true; } ;
 
     virtual URI getURI(bool expanded=false) const = 0 ;
 
-    virtual void enableFiltering() {filteringEnabled = true;} ;
-    virtual void disableFiltering() {filteringEnabled = false;} ;
-    virtual void toggleFiltering() {filteringEnabled = !filteringEnabled;} ;
+    virtual void enableFiltering(void) {filteringEnabled = true;} ;
+    virtual void disableFiltering(void) {filteringEnabled = false;} ;
+    virtual bool toggleFiltering(void) {filteringEnabled = !filteringEnabled; return filteringEnabled ;} ;
 
     // http://www.lifl.fr/~casiez/1euro/
     virtual void tuneFiltering(double mincutoff, double beta) ;

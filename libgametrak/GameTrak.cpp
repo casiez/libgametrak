@@ -171,24 +171,25 @@
   	}
     calibrating = false;
     calibrated = true;
+    useCalibration = true;
     return getCalibrationString();
   }
 
   std::string GameTrak::getCalibrationString() {
     std::stringstream q ;
-    q << "milt=" << std::setw(3) << minRawLeftTheta
-      << "&milp=" << std::setw(3) << minRawLeftPhi
-      << "&mill=" << std::setw(3) << minRawLeftL
-      << "&mirt=" << std::setw(3) << minRawRightTheta
-      << "&mirp=" << std::setw(3) << minRawRightPhi
-      << "&mirl=" << std::setw(3) << minRawRightL
+    q << "milt=" <<  minRawLeftTheta
+      << "&milp=" <<  minRawLeftPhi
+      << "&mill=" <<  minRawLeftL
+      << "&mirt=" <<  minRawRightTheta
+      << "&mirp=" <<  minRawRightPhi
+      << "&mirl=" <<  minRawRightL
 
-      << "&malt=" << std::setw(3) << maxRawLeftTheta
-      << "&malp=" << std::setw(3) << maxRawLeftPhi
-      << "&mall=" << std::setw(3) << maxRawLeftL
-      << "&mart=" << std::setw(3) << maxRawRightTheta
-      << "&marp=" << std::setw(3) << maxRawRightPhi
-      << "&marl=" << std::setw(3) << maxRawRightL;
+      << "&malt=" <<  maxRawLeftTheta
+      << "&malp=" <<  maxRawLeftPhi
+      << "&mall=" <<  maxRawLeftL
+      << "&mart=" <<  maxRawRightTheta
+      << "&marp=" <<  maxRawRightPhi
+      << "&marl=" <<  maxRawRightL;
 
     return q.str();
   }
@@ -211,6 +212,10 @@
 	if (this->debugLevel > 1) {
     	std::cout << getCalibrationString() << std::endl;
 	}
+  }
+
+  bool GameTrak::isCalibrating() {
+    return calibrating;
   }
 
   void
