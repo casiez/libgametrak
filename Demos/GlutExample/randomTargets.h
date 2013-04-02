@@ -24,9 +24,13 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #include <OpenGL/OpenGL.h>
-#endif
-#ifdef __linux__
+#else
 #include <GL/glut.h> 
+#endif
+
+#ifdef WIN32
+#include <Windows.h>
+#include <GL/gl.h>
 #endif
 
 class Target

@@ -141,7 +141,12 @@ void HIDAPIGameTrak::connect() {
           //std::cerr << "Exception with hid_open: " << e.what() << std::endl ;
           if (debugLevel > 0) std::cout << "Trying to connect..." << std::endl;
       }
-      usleep(200000);
+#ifdef WIN32
+	  Sleep(200) ;
+#else
+	  usleep(200000);
+#endif
+     
     }
 }
 
@@ -323,7 +328,11 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
         if (send && (self->callback != 0)) 
           self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
       } else {
-        usleep(100000);
+#ifdef WIN32
+		Sleep(100) ;
+#else
+		usleep(100000);
+#endif
       }
     }
 

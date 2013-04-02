@@ -13,23 +13,23 @@
  *
  */
 
-//#include <windows.h>
-//#include <GL/glut.h>
-
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#include <OpenGL/OpenGL.h>
-#endif
-
-#ifdef __linux__
-#include <GL/glut.h> 
-#endif
 
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <iomanip>
 #include <string.h>
+
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#include <OpenGL/OpenGL.h>
+#else
+#include <GL/glut.h> 
+#endif
+
+#ifdef WIN32
+#include <GL/gl.h>
+#endif
 
 #include "randomTargets.h"
 
@@ -243,7 +243,11 @@ void display()
         }
     }
 
+#ifdef WIN32
+	Sleep(20);
+#else
     usleep(20000);
+#endif
     glutSwapBuffers();
 }
 

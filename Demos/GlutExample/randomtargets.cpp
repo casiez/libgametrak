@@ -46,9 +46,15 @@ Target::~Target()
 
 RandomTargets::RandomTargets()
 {
+#ifdef WIN32
+	LARGE_INTEGER startT;
+	QueryPerformanceCounter(&startT);
+	srand((unsigned int)startT.QuadPart);
+#else
 	struct timeval stamp ;
     gettimeofday(&stamp, 0) ;
 	srand((unsigned int)stamp.tv_usec*1000000LL);
+#endif
 }
 
 void RandomTargets::Init(int targetNumber, double MinX, double MaxX, double MinY, double MaxY, double MinZ, double MaxZ,
