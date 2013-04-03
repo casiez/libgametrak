@@ -15,7 +15,7 @@
 
 #define __STDC_LIMIT_MACROS 1
 
-#include <libgametrak/utils/TimeStamp.h>
+#include <pointing/utils/TimeStamp.h>
 
 #include <iomanip>
 #include <iostream>
@@ -29,7 +29,7 @@
 #endif
 #include <time.h>
 
-namespace gametrak {
+namespace pointing {
 
   const TimeStamp::inttime TimeStamp::one_nanosecond = 1LL ;
   const TimeStamp::inttime TimeStamp::one_microsecond = 1000LL*TimeStamp::one_nanosecond ;
