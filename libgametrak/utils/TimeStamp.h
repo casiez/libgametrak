@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-namespace pointing {
+namespace gametrak {
 
   class TimeStamp {
 
