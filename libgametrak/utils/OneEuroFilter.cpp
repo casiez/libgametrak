@@ -12,7 +12,7 @@ namespace gametrak {
 
 
   void LowPassFilter::setAlpha(double alpha) {
-    if (alpha<=0.0 || alpha>1.0) 
+    if (alpha<=0.0 || alpha>1.0)
       throw std::range_error("alpha should be in (0.0., 1.0]") ;
     a = alpha ;
   }
