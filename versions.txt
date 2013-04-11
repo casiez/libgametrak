@@ -1,0 +1,5 @@
+libgametrak by Géry Casiez
+https://code.google.com/p/libgametrak/
+
++ Version 0.9
+Release on April 11th, 2013. First release.
