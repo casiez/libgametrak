@@ -118,9 +118,33 @@ namespace gametrak {
 
 	TimeStamp::inttime 
 	TimeStamp::now(void) {
+#ifdef WIN32
+	  /*LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
+    unsigned long long ticksPerMillisecond = freq.QuadPart/1000;
+
+	  LARGE_INTEGER counter;
+    QueryPerformanceCounter(&counter);
+    return (inttime)(counter.QuadPart/ticksPerMillisecond);*/
+		static bool freqinit = false;
+		static LARGE_INTEGER fstartTime;
+		static LARGE_INTEGER freq;
+		if(!freqinit){
+			QueryPerformanceFrequency(&freq);
+			QueryPerformanceCounter(&fstartTime);
+			//fpreviousTime=fstartTime;
+			freqinit=true;
+		}
+		LARGE_INTEGER currentTime;
+		QueryPerformanceCounter(&currentTime);
+		unsigned long long elapsedTime = currentTime.QuadPart - fstartTime.QuadPart;
+		return (inttime) ((float)(elapsedTime)/(freq.QuadPart)*1E9);
+#else
+
 		struct timeval stamp ;
 		gettimeofday(&stamp, 0) ;
 		return (inttime)stamp.tv_sec*one_second +  (inttime)stamp.tv_usec*one_microsecond ;
+#endif
 	}
 
 	TimeStamp::inttime 
