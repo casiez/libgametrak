@@ -55,8 +55,19 @@ Vecteur3D gametrakRightHand;
 
 bool debug = false;
 
+//////////////////////////////////////////////////////////
+/*
+ * If usePullMode == true then the callBack is not called,
+ * the cursor(s) positions must be updated explicitly by
+ * calling getters (as in the example at the begining of
+ * the function "display()"
+ */
+bool usePullMode = false;//true;
+//////////////////////////////////////////////////////////
+
 GameTrak *gt = 0 ;
 TimeStamp::inttime last_time = 0 ;
+TimeStamp::inttime ts = 0 ;
 bool button_pressed = false ;
 
 bool showhelp = true;
@@ -158,6 +169,12 @@ void Grid(float width, float height, float step)
 
 void display()
 {
+    if (usePullMode && gt) {
+        gt->getGametrakData(&ts,
+                            &gametrakLeftHand.x,&gametrakLeftHand.y,&gametrakLeftHand.z,
+                            &gametrakRightHand.x,&gametrakRightHand.y,&gametrakRightHand.z,
+                            &button_pressed);
+    }
     char txt[500];
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -343,8 +360,16 @@ int main(int argc, char* argv[])
     glutReshapeFunc(reshape);
 
     try {;
-        gt = GameTrak::create(argc>1?argv[1]:"");
-        gt->setGameTrakCallback(GameTrakCallback);
+        if (!usePullMode) {
+           gt = GameTrak::create(argc>1?argv[1]:"");
+           gt->setGameTrakCallback(GameTrakCallback);
+        } else {
+           gt = GameTrak::create(argc>1?argv[1]:"any:?pullMode=true");
+        }
+        if (!gt->isGametrakConnected()) {
+           std::cerr << "No Gametrak Connected !" << std::endl ;
+           return 1;
+        }
     } catch (std::runtime_error e) {
         std::cerr << "Runtime error: " << e.what() << std::endl ;
     } catch (std::exception e) {

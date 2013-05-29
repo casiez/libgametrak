@@ -138,6 +138,85 @@
     return Qres.RotateVector(Vecteur3D(0,L,0));
   }
 
+    void getRightCursor(TimeStamp::inttime *ts, double *rX, double *rY, double *rZ);
+    void getButton(TimeStamp::inttime *ts, bool *but);
+    
+  void GameTrak::getGametrakData(TimeStamp::inttime *ts,
+                                 double *lX, double *lY, double *lZ,
+                                 double *rX, double *rY, double *rZ,
+                                 bool *but) {
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_lock(&mutex);
+#endif
+      (*ts) = sync_timeStamp;
+      (*lX) = sync_LeftX;
+      (*lY) = sync_LeftY;
+      (*lZ) = sync_LeftZ;
+      (*rX) = sync_RightX;
+      (*rY) = sync_RightY;
+      (*rZ) = sync_RightZ;
+      (*but) = sync_button;
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_unlock(&mutex);
+#endif
+}
+
+  void GameTrak::getLeftCursor(TimeStamp::inttime *ts,
+                               double *lX, double *lY, double *lZ) {
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_lock(&mutex);
+#endif
+      (*ts) = sync_timeStamp;
+      (*lX) = sync_LeftX;
+      (*lY) = sync_LeftY;
+      (*lZ) = sync_LeftZ;
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_unlock(&mutex);
+#endif
+  }
+
+  void GameTrak::getRightCursor(TimeStamp::inttime *ts,
+                                double *rX, double *rY, double *rZ) {
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_lock(&mutex);
+#endif
+      (*ts) = sync_timeStamp;
+      (*rX) = sync_RightX;
+      (*rY) = sync_RightY;
+      (*rZ) = sync_RightZ;
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_unlock(&mutex);
+#endif
+  }
+
+  void GameTrak::getButton(TimeStamp::inttime *ts,
+                           bool *but) {
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_lock(&mutex);
+#endif
+      (*ts) = sync_timeStamp;
+      (*but) = sync_button;
+#ifdef WIN32
+      // TODO
+#else
+      pthread_mutex_unlock(&mutex);
+#endif
+  }
+
   void GameTrak::enterCalibration()
   {
   	if (this->debugLevel > 0) {

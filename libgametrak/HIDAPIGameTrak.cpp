@@ -21,6 +21,13 @@ namespace gametrak {
 
 
   HIDAPIGameTrak::HIDAPIGameTrak(URI uri):GameTrak() {
+
+#ifdef WIN32
+    // TODO
+#else
+    pthread_mutex_init(&mutex,NULL);
+#endif
+
     URI::getQueryArg(uri.query, "debugLevel", &debugLevel) ;
 
     serial_number = "";
@@ -28,6 +35,12 @@ namespace gametrak {
 
     devicePath = "";
     URI::getQueryArg(uri.query, "devicePath", &devicePath) ;
+
+    nbOfTryMax = -1;
+    URI::getQueryArg(uri.query, "nbOfTryMax", &nbOfTryMax) ;
+
+    pullMode = false;
+    URI::getQueryArg(uri.query, "pullMode", &pullMode);
 
     // Enumerate and print the HID devices on the system
     struct hid_device_info *devs, *cur_dev;
@@ -104,11 +117,25 @@ namespace gametrak {
 }*/
 
 void HIDAPIGameTrak::connect() {
-
+    int nbOfTry = 1;
+    gametrakConnected = true;
     // Pictrak mod: http://janoc.rd-h.com/archives/129
     pictrak = false;
 
     while (!deviceConnected) {
+      if ((nbOfTryMax != -1) && (nbOfTry > nbOfTryMax)) {
+          std::cout << nbOfTryMax << std::endl;
+          std::cout << nbOfTry << std::endl;
+
+          gametrakConnected = false;
+          std::cout << "Warning : /!\\ Number of \"try to connect\" max was reached /!\\" << std::endl ;
+          std::cout << "        ( Hint : Either no Gametraks are physically connected  |" << std::endl ;
+          std::cout << "        |        or the the \"nbOfTryMax\" argument in the       |" << std::endl ;
+          std::cout << "        |        URI is too small...                           )" << std::endl ;
+          return;
+      }
+      nbOfTry++;
+
       // Open the device using the VID, PID,
       // and optionally the Serial number.
       try {
@@ -317,6 +344,25 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
         self->RightY = RightHand.y;
         self->RightZ = RightHand.z;
 
+#ifdef WIN32
+        // TODO
+#else
+        pthread_mutex_lock(&mutex);
+#endif
+        self->sync_timeStamp = now;
+        self->sync_button = button;
+        self->sync_LeftX = self->LeftX;
+        self->sync_LeftY = self->LeftY;
+        self->sync_LeftZ = self->LeftZ;
+        self->sync_RightX = self->RightX;
+        self->sync_RightY = self->RightY;
+        self->sync_RightZ = self->RightZ;
+#ifdef WIN32
+        // TODO
+#else
+        pthread_mutex_unlock(&mutex);
+#endif
+
         // bool send = true;
         // if (send && (self->callback != 0))
         //   self->callback(self->callback_context, now, floor(self->rawLeftThetaf), floor(self->rawLeftPhif), floor(self->rawLeftLf), floor(self->rawRightThetaf), floor(self->rawRightPhif), floor(self->rawRightLf), button);
@@ -325,7 +371,7 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
         // if (send && (self->callback != 0))
         //   self->callback(self->callback_context, now, self->LeftTheta, self->LeftPhi, self->LeftL, self->RightTheta, self->RightPhi, self->RightL, button);
 
-        if (send && (self->callback != 0)) 
+        if (!self->pullMode && send && (self->callback != 0)) 
           self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
       } else {
 #ifdef WIN32
