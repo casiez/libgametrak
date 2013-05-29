@@ -26,7 +26,7 @@ using namespace gametrak ;
  * calling getters (as in the example at the begining of
  * the function "display()"
  */
-bool usePullMode = true;//true;
+bool usePullMode = false;//true;
 //////////////////////////////////////////////////////////
 
 GameTrak *gt = 0 ;
