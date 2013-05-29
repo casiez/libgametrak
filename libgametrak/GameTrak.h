@@ -115,6 +115,7 @@ namespace gametrak {
 
     bool isGametrakConnected() { return gametrakConnected; }
 
+    bool isInPullMode() { return pullMode; }
     void getGametrakData(TimeStamp::inttime *ts,
                          double *lX, double *lY, double *lZ,
                          double *rX, double *rY, double *rZ,
