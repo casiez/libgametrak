@@ -25,6 +25,13 @@
 #include <libgametrak/utils/OneEuroFilter.h>
 #include <stdexcept>
 
+#ifdef WIN32
+    // TODO
+#else
+    #include <pthread.h>
+    static pthread_mutex_t mutex;
+#endif
+
 namespace gametrak {
 
   class GameTrak {
@@ -74,6 +81,12 @@ namespace gametrak {
     double LeftX, LeftY, LeftZ;
     double RightX, RightY, RightZ;
 
+    // Last synchronized Gametrak Data
+    TimeStamp::inttime sync_timeStamp;
+    double sync_LeftX, sync_LeftY, sync_LeftZ;
+    double sync_RightX, sync_RightY, sync_RightZ;
+    bool   sync_button;
+
     GameTrak(void) ;
 
     void FilterRawvalues(double timestamp) ;
@@ -81,6 +94,11 @@ namespace gametrak {
     void calibrate() ;
 
     Vecteur3D Transform(double Theta, double Phi, double L) ;
+
+    bool gametrakConnected;
+    int nbOfTryMax;
+
+    bool pullMode;
 
   public:
 
@@ -94,6 +112,16 @@ namespace gametrak {
     static GameTrak *create(std::string device_uri) ;
 
     static void idle(int milliseconds) ;
+
+    bool isGametrakConnected() { return gametrakConnected; }
+
+    void getGametrakData(TimeStamp::inttime *ts,
+                         double *lX, double *lY, double *lZ,
+                         double *rX, double *rY, double *rZ,
+                         bool *but);
+    void getLeftCursor(TimeStamp::inttime *ts, double *lX, double *lY, double *lZ);
+    void getRightCursor(TimeStamp::inttime *ts, double *rX, double *rY, double *rZ);
+    void getButton(TimeStamp::inttime *ts, bool *but);
 
     void enterCalibration(void) ;
     std::string leaveCalibration(void) ;
