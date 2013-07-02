@@ -1,0 +1,4 @@
+To install libgametrak on the system, type:
+
+make
+sudo make install
