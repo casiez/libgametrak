@@ -1,7 +1,8 @@
 VPATH    =  ../../libgametrak \
 			../../libgametrak/utils/
 
-CPPFLAGS =  -I../../libgametrak \
+CPPFLAGS =  -I../.. \
+			-I../../libgametrak \
 			-I/usr/local/include/hidapi
 
 LIBS     =   -lhidapi-libusb
