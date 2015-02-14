@@ -177,6 +177,14 @@ void HIDAPIGameTrak::connect() {
     }
 }
 
+void HIDAPIGameTrak::disconnect() {
+
+	if (handle != NULL && deviceConnected) {
+		hid_close(handle);
+	}
+
+}
+
 #ifdef WIN32
 DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 {
@@ -382,6 +390,8 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
       }
     }
 
+		self->disconnect();
+
     return 0 ;
   }
 
@@ -408,6 +418,7 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
   HIDAPIGameTrak::~HIDAPIGameTrak() {
     run = false;
+		WaitForSingleObject(hThreads[0], INFINITE);
   }
 
 }

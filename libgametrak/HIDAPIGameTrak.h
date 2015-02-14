@@ -52,7 +52,8 @@ namespace gametrak {
     double rawLeftThetafPrev, rawLeftPhifPrev, rawLeftLfPrev,
       rawRightThetafPrev, rawRightPhifPrev, rawRightLfPrev;
 
-    void connect() ;
+    void connect();
+		void disconnect();
 
     volatile bool deviceConnected;
 
