@@ -24,6 +24,7 @@
   #include <windows.h> 
 #else
   #include <pthread.h>
+  #include <unistd.h>
 #endif
 
 namespace gametrak {
@@ -38,6 +39,8 @@ namespace gametrak {
 
     bool pictrak; // Jan Ciger Pictrak board
     std::string serial_number;
+
+    bool threadFinished;
 
 #ifdef WIN32
   HANDLE hThreads[1];
