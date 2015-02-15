@@ -403,7 +403,7 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
 
   URI
-  HIDAPIGameTrak::getURI(bool expanded) const {
+  HIDAPIGameTrak::getURI(bool /* expanded */) const {
     URI uri ;
     uri.scheme = "hidapigt" ;
     // int i = 0 ;
@@ -418,7 +418,9 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
   HIDAPIGameTrak::~HIDAPIGameTrak() {
     run = false;
+#ifdef WIN32
 		WaitForSingleObject(hThreads[0], INFINITE);
+#endif
   }
 
 }
