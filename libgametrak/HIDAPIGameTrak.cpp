@@ -100,6 +100,7 @@ namespace gametrak {
     URI::getQueryArg(uri.query, "useCalibration", &useCalibration) ;
 
     run = true;
+    threadFinished = false;
 
 #ifdef WIN32
   hThreads[0]=CreateThread(NULL, NULL, eventloop, LPVOID(this), 0, &dwThreadId);
@@ -160,7 +161,8 @@ void HIDAPIGameTrak::connect() {
         // Check if we have a PicTrak
         if (handle != NULL) {
           wchar_t product[255];
-          int res = hid_get_product_string(handle, product, 255);
+          //int res =
+          hid_get_product_string(handle, product, 255);
           if (wcscmp(product,L"GameTrak PIC") == 0)
             pictrak = true;
         }
@@ -391,6 +393,7 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
     }
 
 		self->disconnect();
+        self->threadFinished = true;
 
     return 0 ;
   }
@@ -403,7 +406,7 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
 
   URI
-  HIDAPIGameTrak::getURI(bool /* expanded */) const {
+  HIDAPIGameTrak::getURI(bool /*expanded*/) const {
     URI uri ;
     uri.scheme = "hidapigt" ;
     // int i = 0 ;
@@ -419,7 +422,10 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
   HIDAPIGameTrak::~HIDAPIGameTrak() {
     run = false;
 #ifdef WIN32
-		WaitForSingleObject(hThreads[0], INFINITE);
+    WaitForSingleObject(hThreads[0], INFINITE);
+#else
+    while (!threadFinished)
+        usleep(100000);
 #endif
   }
 

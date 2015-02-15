@@ -20,8 +20,14 @@ clean:
 distclean: clean
 	rm -f $(LIB)
 
+uninstall:
+	rm -rf /usr/local/include/libgametrak
+	rm -rf /usr/local/lib/$(LIB)	
+
 install:
 	rm -rf /usr/local/include/libgametrak
 	rm -rf /usr/local/lib/$(LIB)
-	cp -r ../../libgametrak /usr/local/include/libgametrak
+	cp -r ../../libgametrak/ /usr/local/include/libgametrak/
+	rm -rf /usr/local/include/libgametrak/*.cpp
+	rm -rf /usr/local/include/libgametrak/utils/*.cpp
 	cp $(LIB) /usr/local/lib
