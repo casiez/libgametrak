@@ -1,0 +1,1 @@
+See GlutExample : you get a calibration string you can append to the URI
