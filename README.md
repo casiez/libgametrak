@@ -2,7 +2,7 @@
 [Wikipedia](http://en.wikipedia.org/wiki/Gametrak) [Review](http://cb.nowan.net/blog/2006/09/25/gametrak-a-first-impression/) [Music](http://www.youtube.com/watch?v=HFfR_9Wczjc) [Research project using the Gametrak](http://www.youtube.com/watch?v=ZxJD9DXDB1E)
 
 ##Features
-* Cross-platform library based on [HIDAPI](http://www.signal11.us/oss/hidapi/) to get raw events from the Gametrak (first you need to install a fresh version of HIDAPI from here)
+* Cross-platform library based on [HIDAPI](http://www.signal11.us/oss/hidapi/) to get raw events from the Gametrak (first you need to install a fresh version of HIDAPI from [here](https://github.com/signal11/hidapi))
 * Inspired by [Libpointing](http://www.libpointing.org/)
 * Get the position of each string end in Cartesian coordinates using metric units (mm)
 * Use callback functions instead of pooling
