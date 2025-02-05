@@ -63,6 +63,13 @@ int main(int argc, char** argv) {
   return 0 ;
 }
 ```
+
+## Installation
+1. Install [HIDAPI](https://github.com/signal11/hidapi) for your platform (on macOS, you can use `brew install hidapi`)
+1. Compile the libgametrak library, using the ```make``` command in the folder corresponding to your platform (e.g. [installation/OSX](installation/OSX) for macOS). You'll find the compiled library in the ```installation``` folder.
+1. Test the library using [ConsoleExample](Demos/ConsoleExample/) (e.g. run ```make``` in the [Demos/ConsoleExample/OSX](Demos/ConsoleExample/OSX) folder for macOS)
+1. Run the example using ```./main``` in the corresponding platform folder
+
 ## URI documentation
 
 uri are in the form "scheme:?arg1=value1&arg2=value2..."
@@ -84,7 +91,7 @@ The uri "" sets all parameters to default
 
 ### Filtering
   * *filter* (bool) sets filtering on or off. Default value: true
-  * *mincutoff* (double) sets € filter min cutoff frequency. Default value: 1.0
+  * *mincutoff* (double) sets 1€ filter min cutoff frequency. Default value: 1.0
   * *beta* (double) sets 1€ filter beta value. Default value: 0.001
   * *dcutoff* (double) sets 1€ filter dcutoff. Default value: 1.0 (should not be changed)
 

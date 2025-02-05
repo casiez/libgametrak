@@ -3,10 +3,10 @@
  * Demos/ConsoleExample/consoleExample.cpp --
  *
  * Initial software
- * Authors: Gery Casiez (gery.casiez@lifl.fr)
- * Copyright University Lille 1, Inria
+ * Authors: Gery Casiez (gery.casiez@univ-lille.fr)
+ * Copyright University Lille, Inria
  *
- * https://code.google.com/p/libgametrak/
+ * https://github.com/casiez/libgametrak
  *
  * This software may be used and distributed according to the terms of
  * the GNU General Public License version 2 or any later version.
