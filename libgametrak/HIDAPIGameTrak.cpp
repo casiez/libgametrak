@@ -42,6 +42,9 @@ namespace gametrak {
     pullMode = false;
     URI::getQueryArg(uri.query, "pullMode", &pullMode);
 
+    ps2mode = false;
+    URI::getQueryArg(uri.query, "ps2mode", &ps2mode);
+
     // Enumerate and print the HID devices on the system
     struct hid_device_info *devs, *cur_dev;
     
@@ -166,6 +169,9 @@ void HIDAPIGameTrak::connect() {
           if (wcscmp(product,L"GameTrak PIC") == 0)
             pictrak = true;
         }
+        if (ps2mode) {
+          ps2Init(true);
+        }
       } catch (std::exception e) {
           //std::cerr << "Exception with hid_open: " << e.what() << std::endl ;
           if (debugLevel > 0) std::cout << "Trying to connect..." << std::endl;
@@ -185,6 +191,43 @@ void HIDAPIGameTrak::disconnect() {
 		hid_close(handle);
 	}
 
+}
+
+void HIDAPIGameTrak::ps2Init(bool reset) {
+  if (reset) {
+    ps2key = 0x23;
+    ps2index = 0;
+    unsigned char readBuf[16];
+    int ret = hid_read_timeout(handle, readBuf, sizeof(readBuf), 10);
+    static const unsigned char buffer[] = "Gametrak";
+    ret = hid_write(handle, buffer, 8);
+    if (ret < 0) {
+      printf("Unable to write\n");
+    }
+    ret = hid_read_timeout(handle, readBuf, sizeof(readBuf), 10);
+  }
+
+  static unsigned char buffer[2];
+  buffer[0] = (ps2index == 0) ? 0x45 : 0x46;
+  buffer[1] = ps2key & 0xff;
+  ps2NextKey();
+  int ret = hid_write(handle, buffer, 2);
+  if (ret < 0) {
+    printf("Unable to write\n");
+  }
+}
+
+void HIDAPIGameTrak::ps2NextKey() {
+  uint32_t ret = 0;
+  // b0
+  ret |= 0x000001 &  (ps2key);
+  // b1
+  ret |= 0x000002 & ((ps2key >> 15) ^ (ps2key >> 16));
+  // b2-7
+  ret |= 0x0000fc & ((ps2key <<  2) ^ (ps2key >> 16));
+  // b8-23
+  ret |= 0xffff00 &  (ps2key <<  7);
+  ps2key = ret;
 }
 
 #ifdef WIN32
@@ -217,14 +260,22 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
           self->connect();
         }
 
+        if (self->ps2mode) {
+          self->ps2index++;
+          if (self->ps2index == 100) {
+            self->ps2Init(false);
+            self->ps2index = 1;
+          }
+        }
+
         if (self->debugLevel > 2) {
           std::cout << "Raw buffer = ";
           for (int i=0; i<16; i++) std::cout << (int)buf[i] << " ";
           std::cout << std::endl;
         }
 
-        if (self->pictrak)
-          self->rawLeftTheta = ((buf[1] << 8) + buf[0]);
+        if (self->pictrak || self->ps2mode)
+          self->rawLeftTheta = (buf[1] << 8) + buf[0];
         else
           self->rawLeftTheta = (buf[15] << 8) + buf[14];
         self->rawLeftPhi = (buf[3] << 8) + buf[2];
@@ -303,9 +354,9 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
 
           double midLeftTheta = (self->maxRawLeftTheta - self->minRawLeftTheta)/2+self->minRawLeftTheta;
           if (self->pictrak)
-	          self->LeftTheta = -(self->rawLeftThetaf - midLeftTheta) * angleMax / (midLeftTheta-self->minRawLeftTheta);
-	      else
-	          self->LeftTheta = (self->rawLeftThetaf - midLeftTheta) * angleMax / (midLeftTheta-self->minRawLeftTheta);
+            self->LeftTheta = -(self->rawLeftThetaf - midLeftTheta) * angleMax / (midLeftTheta-self->minRawLeftTheta);
+          else
+            self->LeftTheta = (self->rawLeftThetaf - midLeftTheta) * angleMax / (midLeftTheta-self->minRawLeftTheta);
           double midLeftPhi = (self->maxRawLeftPhi - self->minRawLeftPhi)/2+self->minRawLeftPhi;
           self->LeftPhi = -(self->rawLeftPhif - midLeftPhi) * angleMax / (midLeftPhi-self->minRawLeftPhi);
           self->LeftL = stringOffset+mmPerRawVal*(self->maxRawLeftL-self->rawLeftLf);//((stringLength-stringOffset)/(self->maxRawLeftL - self->minRawLeftL)) * (self->maxRawLeftL-self->rawLeftLf);
@@ -385,9 +436,9 @@ DWORD WINAPI HIDAPIGameTrak::eventloop(LPVOID context)
           self->callback(self->callback_context, now, self->LeftX, self->LeftY, self->LeftZ, self->RightX, self->RightY, self->RightZ, button);
       } else {
 #ifdef WIN32
-		Sleep(100) ;
+        Sleep(100) ;
 #else
-		usleep(100000);
+        usleep(100000);
 #endif
       }
     }

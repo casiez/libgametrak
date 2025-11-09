@@ -4,7 +4,8 @@ VPATH    =  .. \
 
 CPPFLAGS =  -I.. \
 			-I../../../ \
-			-I/usr/local/include/hidapi
+			-I/usr/local/include/hidapi \
+			-I/usr/include/hidapi
 
 LIBS     =    -lhidapi-libusb
 

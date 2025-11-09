@@ -38,14 +38,17 @@ namespace gametrak {
     bool run; // for the Loop thread
 
     bool pictrak; // Jan Ciger Pictrak board
+    bool ps2mode;
+    unsigned int ps2key;
+    unsigned char ps2index;
     std::string serial_number;
 
     bool threadFinished;
 
 #ifdef WIN32
-  HANDLE hThreads[1];
-  DWORD dwThreadId;
-  DWORD dwThreadParam;
+    HANDLE hThreads[1];
+    DWORD dwThreadId;
+    DWORD dwThreadParam;
 #else
     pthread_t thread ;
 #endif
@@ -56,7 +59,9 @@ namespace gametrak {
       rawRightThetafPrev, rawRightPhifPrev, rawRightLfPrev;
 
     void connect();
-		void disconnect();
+    void disconnect();
+    void ps2Init(bool reset);
+    void ps2NextKey();
 
     volatile bool deviceConnected;
 
@@ -66,7 +71,7 @@ namespace gametrak {
 
     URI getURI(bool expanded=false) const ;
 #ifdef WIN32
-	static DWORD WINAPI eventloop(LPVOID lpvThreadParam);
+    static DWORD WINAPI eventloop(LPVOID lpvThreadParam);
 #else
     static void *eventloop(void *self) ;
 #endif
