@@ -2,8 +2,8 @@
 [Wikipedia](http://en.wikipedia.org/wiki/Gametrak) [Review](http://cb.nowan.net/blog/2006/09/25/gametrak-a-first-impression/) [Music](http://www.youtube.com/watch?v=HFfR_9Wczjc) [Research project using the Gametrak](http://www.youtube.com/watch?v=ZxJD9DXDB1E)
 
 ## Features
-* Cross-platform library based on [HIDAPI](http://www.signal11.us/oss/hidapi/) to get raw events from the Gametrak (first you need to install a fresh version of HIDAPI from [here](https://github.com/signal11/hidapi))
-* Inspired by [Libpointing](http://www.libpointing.org/)
+* Cross-platform library based on [HIDAPI](https://github.com/libusb/hidapi) to get raw events from the Gametrak (first you need to install a fresh version of HIDAPI from [here](https://github.com/libusb/hidapi))
+* Inspired by [Libpointing](https://github.com/INRIA/libpointing)
 * Get the position of each string end in Cartesian coordinates using metric units (mm)
 * Use callback functions instead of pooling
 * [1€](http://cristal.univ-lille.fr/~casiez/1euro/) filter embedded
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 ```
 
 ## Installation
-1. Install [HIDAPI](https://github.com/signal11/hidapi) for your platform (on macOS, you can use `brew install hidapi`)
+1. Install [HIDAPI](https://github.com/libusb/hidapi) for your platform (on macOS, you can use `brew install hidapi`)
 1. Compile the libgametrak library, using the ```make``` command in the folder corresponding to your platform (e.g. [installation/OSX](installation/OSX) for macOS). You'll find the compiled library in the ```installation``` folder.
 1. Test the library using [ConsoleExample](Demos/ConsoleExample/) (e.g. run ```make``` in the [Demos/ConsoleExample/OSX](Demos/ConsoleExample/OSX) folder for macOS)
 1. Run the example using ```./main``` in the corresponding platform folder
@@ -108,7 +108,7 @@ The uri "" sets all parameters to default
 ## Installation
 Works on Windows, OS X, Linux
 
-There is no driver to install, simply install the last version of [HIDAPI](https://github.com/signal11/hidapi)
+There is no driver to install, simply install the last version of [HIDAPI](https://github.com/libusb/hidapi)
 
 ## Frame of reference
 The picture below illustrates the origin and the axis used to locate each Gametrak pointer. 

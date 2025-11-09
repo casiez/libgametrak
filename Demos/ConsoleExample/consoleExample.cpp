@@ -69,7 +69,7 @@ main(int argc, char** argv) {
   try {
 
     if (!usePullMode) {
-       gt = GameTrak::create(argc>1?argv[1]:"") ;
+       gt = GameTrak::create(argc>1?argv[1]:"any:?debugLevel=1&ps2mode=true") ;
        gt->setGameTrakCallback(GameTrakCallback) ;
     } else {
        gt = GameTrak::create(argc>1?argv[1]:"any:?pullMode=true") ;
